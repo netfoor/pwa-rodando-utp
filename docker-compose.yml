@@ -1,0 +1,35 @@
+# Desarrollo local: PostgreSQL + la app (API y PWA) en http://localhost:3000
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: rodando
+      POSTGRES_PASSWORD: rodando
+      POSTGRES_DB: rodando
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rodando -d rodando"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://rodando:rodando@db:5432/rodando
+      JWT_SECRET: ${JWT_SECRET:-cambia-esto-en-local}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      DATABASE_SSL: "false"   # el Postgres local no usa SSL
+      PORT: 3000
+    ports:
+      - "${PORT:-3000}:3000"
+
+volumes:
+  pgdata:
