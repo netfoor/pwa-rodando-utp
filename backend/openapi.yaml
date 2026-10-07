@@ -1,0 +1,363 @@
+openapi: 3.0.3
+info:
+  title: Rodando UTP API
+  version: 1.0.0
+  description: |
+    API REST de Rodando UTP, plataforma de raites entre estudiantes de la UTP.
+    Los errores siempre tienen la forma `{ "error": { "code", "message", "details" } }`.
+    Días de la semana: 0 = lunes … 5 = sábado.
+servers:
+  - url: /
+tags:
+  - { name: Sistema }
+  - { name: Auth }
+  - { name: Catálogo }
+  - { name: Raites }
+  - { name: Reservas }
+  - { name: Conductores }
+  - { name: Push }
+paths:
+  /api/health:
+    get:
+      tags: [Sistema]
+      summary: Estado del servicio y de la base de datos
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Health" } } } }
+        "503": { description: Base de datos no disponible }
+  /api/auth/registro:
+    post:
+      tags: [Auth]
+      summary: Crear cuenta (solo correos @utpuebla.edu.mx)
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/Registro" } } }
+      responses:
+        "201": { description: Cuenta creada, content: { application/json: { schema: { $ref: "#/components/schemas/Sesion" } } } }
+        "400": { $ref: "#/components/responses/Error" }
+        "409": { description: Correo ya registrado (CORREO_EXISTENTE), content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [correo, password]
+              properties: { correo: { type: string, format: email }, password: { type: string } }
+      responses:
+        "200": { description: Sesión iniciada, content: { application/json: { schema: { $ref: "#/components/schemas/Sesion" } } } }
+        "401": { $ref: "#/components/responses/Error" }
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Perfil del usuario autenticado
+      security: [{ bearer: [] }]
+      responses:
+        "200": { description: Perfil, content: { application/json: { schema: { type: object, properties: { usuario: { $ref: "#/components/schemas/Usuario" } } } } } }
+        "401": { $ref: "#/components/responses/Error" }
+  /api/zonas:
+    get:
+      tags: [Catálogo]
+      summary: Zonas de salida con su trazo en el mapa
+      responses:
+        "200": { description: Lista, content: { application/json: { schema: { type: object, properties: { zonas: { type: array, items: { $ref: "#/components/schemas/Zona" } } } } } } }
+  /api/zonas/{id}:
+    get:
+      tags: [Catálogo]
+      summary: Detalle de una zona
+      parameters: [{ name: id, in: path, required: true, schema: { type: string }, example: centro }]
+      responses:
+        "200": { description: Zona, content: { application/json: { schema: { $ref: "#/components/schemas/Zona" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+  /api/raites:
+    get:
+      tags: [Raites]
+      summary: Listar raites con filtros
+      description: "`libres` = asientos − reservas confirmadas del día (`dia` o, si se omite, el primer día de operación desde hoy)."
+      parameters:
+        - { name: zona, in: query, schema: { type: string }, example: centro }
+        - { name: turno, in: query, schema: { type: string, enum: [manana, tarde, noche, matutino, vespertino] } }
+        - { name: tipo, in: query, schema: { type: string, enum: [ida, regreso] } }
+        - { name: libres, in: query, schema: { type: boolean }, description: Solo raites con lugares libres }
+        - { name: dia, in: query, schema: { type: integer, minimum: 0, maximum: 5 } }
+      responses:
+        "200": { description: Lista, content: { application/json: { schema: { type: object, properties: { total: { type: integer }, raites: { type: array, items: { $ref: "#/components/schemas/Raite" } } } } } } }
+        "400": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [Raites]
+      summary: Publicar un raite (rol conductor)
+      security: [{ bearer: [] }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/RaiteInput" } } } }
+      responses:
+        "201": { description: Creado, content: { application/json: { schema: { $ref: "#/components/schemas/Raite" } } } }
+        "400": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+  /api/raites/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [Raites]
+      summary: Detalle de un raite
+      responses:
+        "200": { description: Raite, content: { application/json: { schema: { $ref: "#/components/schemas/Raite" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+    patch:
+      tags: [Raites]
+      summary: Editar un raite (solo el dueño)
+      security: [{ bearer: [] }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/RaiteInput" } } } }
+      responses:
+        "200": { description: Actualizado, content: { application/json: { schema: { $ref: "#/components/schemas/Raite" } } } }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Raites]
+      summary: Eliminar un raite (solo el dueño)
+      security: [{ bearer: [] }]
+      responses:
+        "204": { description: Eliminado }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+  /api/reservas:
+    post:
+      tags: [Reservas]
+      summary: Apartar un lugar
+      description: Transacción con bloqueo de fila; responde 409 `RAITE_LLENO` si no hay cupo ese día.
+      security: [{ bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [raiteId, dia, parada, nombre]
+              properties:
+                raiteId: { type: integer }
+                dia: { type: integer, minimum: 0, maximum: 5 }
+                parada: { type: string }
+                nombre: { type: string }
+      responses:
+        "201": { description: Reservación creada, content: { application/json: { schema: { $ref: "#/components/schemas/Reserva" } } } }
+        "400": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+  /api/reservas/mias:
+    get:
+      tags: [Reservas]
+      summary: Mis lugares apartados
+      security: [{ bearer: [] }]
+      responses:
+        "200": { description: Lista, content: { application/json: { schema: { type: object, properties: { reservas: { type: array, items: { $ref: "#/components/schemas/Reserva" } } } } } } }
+  /api/reservas/{codigo}:
+    delete:
+      tags: [Reservas]
+      summary: Cancelar una reservación
+      security: [{ bearer: [] }]
+      parameters: [{ name: codigo, in: path, required: true, schema: { type: string }, example: RU-7KQ2 }]
+      responses:
+        "200": { description: Cancelada }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+  /api/conductores/solicitud:
+    post:
+      tags: [Conductores]
+      summary: Solicitud de registro como conductor (formulario público)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, correo, auto, zona, hora]
+              properties:
+                nombre: { type: string }
+                correo: { type: string, example: matricula@utpuebla.edu.mx }
+                carrera: { type: string }
+                auto: { type: string }
+                zona: { type: string }
+                hora: { type: string, example: "06:30" }
+                lugares: { type: integer, minimum: 1, maximum: 4 }
+      responses:
+        "201": { description: Solicitud en revisión }
+        "400": { $ref: "#/components/responses/Error" }
+  /api/admin/solicitudes:
+    get:
+      tags: [Conductores]
+      summary: Listar solicitudes de conductor (admin)
+      security: [{ bearer: [] }]
+      parameters: [{ name: estado, in: query, schema: { type: string, enum: [pendiente, aprobada] } }]
+      responses:
+        "200": { description: Lista }
+        "403": { $ref: "#/components/responses/Error" }
+  /api/admin/solicitudes/{id}/aprobar:
+    post:
+      tags: [Conductores]
+      summary: Aprobar una solicitud (admin)
+      security: [{ bearer: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses:
+        "200": { description: Aprobada }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+  /api/stats:
+    get:
+      tags: [Catálogo]
+      summary: Cifras del hero
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { type: object, properties: { estudiantes: { type: integer }, conductores: { type: integer }, co2Toneladas: { type: number } } } } } }
+  /api/testimonios:
+    get: { tags: [Catálogo], summary: Testimonios, responses: { "200": { description: OK } } }
+  /api/faq:
+    get: { tags: [Catálogo], summary: Preguntas frecuentes, responses: { "200": { description: OK } } }
+  /api/config:
+    get:
+      tags: [Catálogo]
+      summary: Parámetros de la calculadora
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { type: object, additionalProperties: { type: number }, example: { precioGasolina: 24.3, co2PorLitro: 2.31, tarifaUberKm: 9.5, tarifaUberBase: 35, pasajeTransporte: 12 } } } } }
+  /api/calculadora:
+    post:
+      tags: [Catálogo]
+      summary: Calculadora de ahorro (conductor o pasajero)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rol, km, dias]
+              properties:
+                rol: { type: string, enum: [conductor, pasajero] }
+                km: { type: number, minimum: 1, maximum: 40 }
+                dias: { type: integer, minimum: 1, maximum: 6 }
+                pasajeros: { type: integer, minimum: 1, maximum: 4, default: 3 }
+                rendimiento: { type: number, minimum: 6, maximum: 25, default: 14 }
+                precio: { type: number, description: "$/litro; por defecto el de /api/config" }
+      responses:
+        "200":
+          description: Resultado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ahorroMes: { type: number }
+                  ahorroCuatri: { type: number }
+                  litros: { type: number }
+                  co2Kg: { type: number }
+                  asientos: { type: number, description: Solo modo conductor }
+                  horas: { type: number, description: Solo modo pasajero }
+                  etiqueta: { type: string }
+                  nota: { type: string }
+                  barras: { type: array, items: { type: object, properties: { label: { type: string }, val: { type: number }, color: { type: string } } } }
+        "400": { $ref: "#/components/responses/Error" }
+  /api/push/vapid-public-key:
+    get:
+      tags: [Push]
+      summary: Llave pública VAPID
+      responses:
+        "200": { description: OK }
+        "503": { $ref: "#/components/responses/Error" }
+  /api/push/subscribe:
+    post:
+      tags: [Push]
+      summary: Registrar una suscripción push (con sesión se liga al usuario)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint, keys]
+              properties:
+                endpoint: { type: string, format: uri }
+                keys: { type: object, required: [p256dh, auth], properties: { p256dh: { type: string }, auth: { type: string } } }
+      responses:
+        "201": { description: Suscrito }
+  /api/push/send:
+    post:
+      tags: [Push]
+      summary: Enviar una notificación (admin)
+      security: [{ bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [titulo, mensaje]
+              properties: { titulo: { type: string }, mensaje: { type: string }, userId: { type: integer } }
+      responses:
+        "200": { description: Número de envíos }
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer, bearerFormat: JWT }
+  responses:
+    Error:
+      description: Error
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string, example: RAITE_LLENO }
+            message: { type: string }
+            details: {}
+    Health:
+      type: object
+      properties: { status: { type: string, example: ok }, db: { type: boolean }, version: { type: string }, uptime: { type: integer } }
+    Registro:
+      type: object
+      required: [nombre, correo, password]
+      properties:
+        nombre: { type: string }
+        correo: { type: string, example: matricula@utpuebla.edu.mx }
+        password: { type: string, minLength: 8 }
+        rol: { type: string, enum: [pasajero, conductor], default: pasajero }
+        carrera: { type: string }
+        cuatrimestre: { type: integer }
+        auto: { type: string, description: Obligatorio si rol = conductor }
+        placas: { type: string }
+    Usuario:
+      type: object
+      properties: { id: { type: integer }, nombre: { type: string }, correo: { type: string }, rol: { type: string, enum: [pasajero, conductor, admin] }, carrera: { type: string }, cuatrimestre: { type: integer } }
+    Sesion:
+      type: object
+      properties: { token: { type: string }, usuario: { $ref: "#/components/schemas/Usuario" } }
+    Zona:
+      type: object
+      properties: { id: { type: string }, nombre: { type: string }, km: { type: integer }, x: { type: integer }, y: { type: integer }, color: { type: string }, trazo: { type: string } }
+    Raite:
+      type: object
+      properties:
+        id: { type: integer }
+        zona: { type: string }
+        tipo: { type: string, enum: [ida, regreso] }
+        hora: { type: string }
+        dias: { type: array, items: { type: integer } }
+        asientos: { type: integer }
+        aportacion: { type: integer }
+        paradas: { type: array, items: { type: string } }
+        auto: { type: string }
+        conductor: { type: object, properties: { id: { type: integer }, nombre: { type: string }, carrera: { type: string }, cuatri: { type: integer }, rating: { type: number }, viajes: { type: integer }, verificado: { type: boolean } } }
+        dia: { type: integer, description: Día usado para calcular `libres` }
+        libres: { type: integer }
+        libresPorDia: { type: object, additionalProperties: { type: integer } }
+    RaiteInput:
+      type: object
+      required: [zona, tipo, hora, dias, asientos, aportacion, paradas]
+      properties:
+        zona: { type: string }
+        tipo: { type: string, enum: [ida, regreso] }
+        hora: { type: string, example: "06:30" }
+        dias: { type: array, items: { type: integer } }
+        asientos: { type: integer }
+        aportacion: { type: integer }
+        paradas: { type: array, items: { type: string } }
+    Reserva:
+      type: object
+      properties: { codigo: { type: string, example: RU-7KQ2 }, raiteId: { type: integer }, dia: { type: integer }, parada: { type: string }, nombre: { type: string }, estado: { type: string, enum: [confirmada, cancelada] } }
