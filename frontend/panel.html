@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi panel · Rodando UTP</title>
+  <meta name="theme-color" content="#1E1B4B">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-page">
+  <header class="header scrolled">
+    <div class="container header__inner">
+      <a href="index.html" class="brand" aria-label="Volver al inicio">
+        <img src="img/logo.svg" alt="Logo de Rodando UTP" class="brand__logo" width="48" height="48">
+        <span class="brand__text"><span class="brand__name">Rodando <b>UTP</b></span><span class="brand__slogan">Panel del conductor</span></span>
+      </a>
+      <div class="header__actions">
+        <span id="who" class="who" hidden></span>
+        <button class="btn btn--sm btn--outline" id="logoutBtn" hidden>Cerrar sesión</button>
+        <a class="btn btn--sm btn--primary" href="index.html">← Volver al sitio</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container panel">
+    <!-- Acceso -->
+    <section id="loginBox" class="panel-card panel-card--narrow" hidden>
+      <h2>Entra a tu panel</h2>
+      <p style="color:var(--muted)">Administra los raites que publicas. Prueba con <code>mariana.lopez@utpuebla.edu.mx</code> / <code>Demo1234!</code></p>
+      <form id="loginForm" novalidate>
+        <label class="field"><span>Correo institucional</span><input type="email" id="lCorreo" placeholder="matricula@utpuebla.edu.mx" autocomplete="email"></label>
+        <label class="field"><span>Contraseña</span><input type="password" id="lPass" autocomplete="current-password"></label>
+        <small class="err" id="lError" style="display:block;margin-bottom:10px"></small>
+        <button class="btn btn--primary btn--lg btn--block" type="submit">Entrar</button>
+      </form>
+    </section>
+
+    <!-- CRUD de raites -->
+    <section id="crud" hidden>
+      <div class="panel-head">
+        <div>
+          <span class="eyebrow">CRUD de raites</span>
+          <h2>Mis raites publicados</h2>
+        </div>
+        <button class="btn btn--primary" id="newBtn">＋ Agregar raite</button>
+      </div>
+
+      <div class="panel-card table-wrap">
+        <table class="tbl" id="tbl">
+          <thead><tr><th>Ruta</th><th>Hora</th><th>Días</th><th>Asientos</th><th>Aportación</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty" id="emptyMsg" hidden>Aún no tienes raites. Pulsa «Agregar raite» para crear el primero.</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Formulario crear / editar -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+      <button class="modal__x" data-close aria-label="Cerrar">×</button>
+      <h3 id="formTitle">Agregar raite</h3>
+      <form id="raiteForm" novalidate>
+        <label class="field"><span>Zona</span><select id="fZona"></select></label>
+        <div class="form__row">
+          <label class="field"><span>Sentido</span>
+            <select id="fTipo"><option value="ida">Ida (a la UTP)</option><option value="regreso">Regreso (de la UTP)</option></select></label>
+          <label class="field"><span>Hora de salida</span><input type="time" id="fHora" value="06:30"></label>
+        </div>
+        <div class="field"><span>Días</span><div class="pick-days" id="fDias"></div></div>
+        <div class="form__row">
+          <label class="field"><span>Asientos</span><input type="number" id="fAsientos" min="1" max="8" value="3"></label>
+          <label class="field"><span>Aportación ($)</span><input type="number" id="fAport" min="0" max="500" value="20"></label>
+        </div>
+        <label class="field"><span>Paradas (una por línea)</span><textarea id="fParadas" rows="3" placeholder="Zócalo&#10;Paseo Bravo"></textarea></label>
+        <label class="check" id="activoWrap" hidden><input type="checkbox" id="fActivo" checked> Raite activo (visible para pasajeros)</label>
+        <small class="err" id="fError" style="display:block;margin:8px 0"></small>
+        <button class="btn btn--primary btn--lg btn--block" type="submit" id="fOk">Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <script src="js/api.js"></script>
+  <script src="js/panel.js"></script>
+</body>
+</html>

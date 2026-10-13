@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 460" width="560" height="460">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE9A8"/>
+      <stop offset="1" stop-color="#FFF7DE"/>
+    </linearGradient>
+    <linearGradient id="car" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFD24D"/>
+      <stop offset="1" stop-color="#6D28D9"/>
+    </linearGradient>
+    <clipPath id="blob"><path d="M280 20 C 420 10, 540 90, 545 230 C 550 360, 440 445, 290 448 C 140 450, 20 380, 15 240 C 10 110, 140 30, 280 20 Z"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#blob)">
+    <rect width="560" height="460" fill="url(#sky)"/>
+    <!-- sol -->
+    <circle cx="430" cy="95" r="44" fill="#7C3AED" opacity=".55"/>
+    <circle cx="430" cy="95" r="30" fill="#6D28D9"/>
+    <!-- nubes -->
+    <g fill="#fff" opacity=".95">
+      <ellipse cx="130" cy="90" rx="46" ry="16"/><ellipse cx="150" cy="78" rx="26" ry="18"/>
+      <ellipse cx="320" cy="60" rx="34" ry="11"/><ellipse cx="334" cy="52" rx="18" ry="12"/>
+    </g>
+    <!-- volcanes (Popocatépetl e Iztaccíhuatl) -->
+    <path d="M-10 250 L90 150 L120 170 L150 140 L260 250 Z" fill="#D3CFF0"/>
+    <path d="M90 150 L70 170 L84 168 L98 178 L112 164 L120 170 L150 140 L130 160 L110 156 Z" fill="#fff"/>
+    <path d="M200 250 L300 160 L400 250 Z" fill="#B5C5DD"/>
+    <path d="M300 160 L278 180 L292 176 L304 186 L316 176 L324 181 Z" fill="#fff"/>
+    <!-- edificio UTP -->
+    <g transform="translate(330 150)">
+      <rect x="0" y="40" width="190" height="120" rx="6" fill="#1E1B4B"/>
+      <rect x="60" y="0" width="70" height="160" rx="6" fill="#2E2A6B"/>
+      <rect x="72" y="14" width="46" height="22" rx="5" fill="#7C3AED"/>
+      <text x="95" y="31" text-anchor="middle" font-family="Outfit, Arial, sans-serif" font-weight="900" font-size="15" fill="#1E1B4B">UTP</text>
+      <g fill="#5B7AA6">
+        <rect x="14" y="56" width="16" height="14" rx="2"/><rect x="36" y="56" width="16" height="14" rx="2"/>
+        <rect x="14" y="80" width="16" height="14" rx="2"/><rect x="36" y="80" width="16" height="14" rx="2"/>
+        <rect x="14" y="104" width="16" height="14" rx="2"/><rect x="36" y="104" width="16" height="14" rx="2"/>
+        <rect x="140" y="56" width="16" height="14" rx="2"/><rect x="162" y="56" width="16" height="14" rx="2"/>
+        <rect x="140" y="80" width="16" height="14" rx="2"/><rect x="162" y="80" width="16" height="14" rx="2"/>
+        <rect x="140" y="104" width="16" height="14" rx="2"/><rect x="162" y="104" width="16" height="14" rx="2"/>
+        <rect x="74" y="48" width="18" height="16" rx="2"/><rect x="98" y="48" width="18" height="16" rx="2"/>
+        <rect x="74" y="74" width="18" height="16" rx="2"/><rect x="98" y="74" width="18" height="16" rx="2"/>
+      </g>
+      <rect x="80" y="112" width="30" height="48" rx="3" fill="#7C3AED" opacity=".85"/>
+    </g>
+    <!-- pasto -->
+    <path d="M-10 290 C 120 260, 300 270, 570 250 L570 470 L-10 470 Z" fill="#9FE0BD"/>
+    <path d="M-10 320 C 150 300, 350 310, 570 290 L570 470 L-10 470 Z" fill="#7BD3A4"/>
+    <!-- árboles -->
+    <g>
+      <rect x="58" y="262" width="7" height="30" fill="#6B4F3A"/><circle cx="61" cy="255" r="22" fill="#14B8A6"/><circle cx="50" cy="262" r="14" fill="#0F9488"/>
+      <rect x="296" y="258" width="6" height="26" fill="#6B4F3A"/><circle cx="299" cy="252" r="17" fill="#14B8A6"/>
+      <rect x="520" y="248" width="7" height="30" fill="#6B4F3A"/><circle cx="523" cy="242" r="20" fill="#0F9488"/>
+    </g>
+    <!-- camino -->
+    <path d="M-20 400 C 120 350, 300 330, 580 300 L580 360 C 330 380, 160 410, 40 480 L-20 480 Z" fill="#3A3566"/>
+    <path d="M10 420 C 140 375, 320 350, 570 328" stroke="#7C3AED" stroke-width="5" stroke-dasharray="22 18" fill="none"/>
+  </g>
+
+  <!-- coche principal -->
+  <g transform="translate(120 262) rotate(-6)">
+    <ellipse cx="140" cy="118" rx="140" ry="12" fill="#1E1B4B" opacity=".25"/>
+    <path d="M10 100 L10 78 Q10 66 22 63 L62 55 L100 18 Q110 8 126 8 L196 8 Q212 8 222 18 L256 54 L270 58 Q286 62 286 78 L286 100 Q286 108 278 108 L18 108 Q10 108 10 100 Z" fill="url(#car)"/>
+    <path d="M108 24 Q114 18 124 18 L150 18 L150 56 L78 56 Z" fill="#1E1B4B"/>
+    <path d="M160 18 L192 18 Q202 18 208 24 L240 56 L160 56 Z" fill="#1E1B4B"/>
+    <!-- estudiantes en las ventanas -->
+    <circle cx="124" cy="40" r="11" fill="#FF8A3D"/><path d="M110 56 Q124 42 138 56 Z" fill="#FF8A3D"/>
+    <circle cx="176" cy="40" r="11" fill="#8B5CF6"/><path d="M162 56 Q176 42 190 56 Z" fill="#8B5CF6"/>
+    <circle cx="210" cy="42" r="9" fill="#0EA5E9"/><path d="M198 56 Q210 45 222 56 Z" fill="#0EA5E9"/>
+    <rect x="150" y="18" width="10" height="38" fill="url(#car)"/>
+    <!-- detalles -->
+    <rect x="266" y="68" width="16" height="10" rx="4" fill="#F1E9FF"/>
+    <rect x="12" y="70" width="10" height="10" rx="3" fill="#E5484D"/>
+    <path d="M150 66 L150 100" stroke="#5B21B6" stroke-width="3"/>
+    <rect x="164" y="72" width="18" height="5" rx="2.5" fill="#5B21B6"/>
+    <rect x="30" y="84" width="40" height="14" rx="4" fill="#1E1B4B"/>
+    <text x="50" y="95" text-anchor="middle" font-family="Outfit, Arial, sans-serif" font-weight="800" font-size="9" fill="#7C3AED">RODANDO</text>
+    <!-- llantas -->
+    <g><circle cx="70" cy="108" r="26" fill="#1E1B4B"/><circle cx="70" cy="108" r="12" fill="#D3CFF0"/><circle cx="70" cy="108" r="4" fill="#1E1B4B"/></g>
+    <g><circle cx="226" cy="108" r="26" fill="#1E1B4B"/><circle cx="226" cy="108" r="12" fill="#D3CFF0"/><circle cx="226" cy="108" r="4" fill="#1E1B4B"/></g>
+  </g>
+
+  <!-- líneas de velocidad -->
+  <g stroke="#1E1B4B" stroke-width="5" stroke-linecap="round" opacity=".35">
+    <path d="M40 300 L96 294"/><path d="M24 330 L100 322"/><path d="M52 356 L104 350"/>
+  </g>
+
+  <!-- pin de ubicación -->
+  <g transform="translate(470 180)">
+    <path d="M0 0 C -18 0, -30 12, -30 28 C -30 50, 0 72, 0 72 C 0 72, 30 50, 30 28 C 30 12, 18 0, 0 0 Z" fill="#14B8A6" stroke="#fff" stroke-width="4"/>
+    <circle cx="0" cy="28" r="10" fill="#fff"/>
+  </g>
+</svg>

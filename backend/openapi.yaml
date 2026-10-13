@@ -95,6 +95,13 @@ paths:
         "201": { description: Creado, content: { application/json: { schema: { $ref: "#/components/schemas/Raite" } } } }
         "400": { $ref: "#/components/responses/Error" }
         "403": { $ref: "#/components/responses/Error" }
+  /api/raites/mios:
+    get:
+      tags: [Raites]
+      summary: Mis raites (incluye desactivados)
+      security: [{ bearer: [] }]
+      responses:
+        "200": { description: Lista, content: { application/json: { schema: { type: object, properties: { total: { type: integer }, raites: { type: array, items: { $ref: "#/components/schemas/Raite" } } } } } } }
   /api/raites/{id}:
     parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
     get:

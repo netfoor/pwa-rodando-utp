@@ -7,6 +7,10 @@ export const listar = async (req, res) => {
   const lista = await raites.listar(req.validated.query);
   res.json({ total: lista.length, raites: lista });
 };
+export const mios = async (req, res) => {
+  const lista = await raites.listarMios(req.user);
+  res.json({ total: lista.length, raites: lista });
+};
 export const detalle = async (req, res) => res.json(await raites.obtener(req.validated.params.id));
 export const crear = async (req, res) => res.status(201).json(await raites.crear(req.user, req.validated.body));
 export const actualizar = async (req, res) =>
