@@ -1,0 +1,32 @@
+# Blueprint de Render: un Web Service Docker (API + PWA) y una base PostgreSQL gratuita.
+services:
+  - type: web
+    name: rodando-utp
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: rodando-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: ""
+      - key: VAPID_PUBLIC_KEY
+        sync: false   # se captura en el panel de Render (opcional)
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        value: mailto:hola@rodandoutp.mx
+
+databases:
+  - name: rodando-db
+    plan: free
+    databaseName: rodando
+    user: rodando
