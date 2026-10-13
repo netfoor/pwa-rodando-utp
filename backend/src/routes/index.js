@@ -40,6 +40,7 @@ r.get("/zonas", h(cat.zonas));
 r.get("/zonas/:id", h(cat.zona));
 
 r.get("/raites", validate({ query: listarRaitesQuery }), h(raites.listar));
+r.get("/raites/mios", requireAuth, h(raites.mios)); // antes de :id para que no se confunda
 r.get("/raites/:id", validate({ params: idParam }), h(raites.detalle));
 r.post("/raites", ...requireRole("conductor", "admin"), validate({ body: crearRaiteSchema }), h(raites.crear));
 r.patch("/raites/:id", requireAuth, validate({ params: idParam, body: editarRaiteSchema }), h(raites.actualizar));

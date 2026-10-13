@@ -64,6 +64,15 @@ describe("CRUD de raites (conductor dueño)", () => {
     expect((await api().get(`/api/raites/${id}`)).status).toBe(404);
   });
 
+  it("GET /api/raites/mios lista solo los raites propios", async () => {
+    const c = await nuevoUsuario({ rol: "conductor", auto: "Gol azul" });
+    expect((await api().get("/api/raites/mios")).status).toBe(401);
+    expect((await api().get("/api/raites/mios").set(c.auth)).body.total).toBe(0);
+    await api().post("/api/raites").set(c.auth).send({ zona: "croc", tipo: "ida", hora: "07:00", dias: [0], asientos: 2, aportacion: 10, paradas: ["Unidad CROC"] });
+    const mios = await api().get("/api/raites/mios").set(c.auth);
+    expect(mios.body.total).toBe(1);
+  });
+
   it("un pasajero no puede publicar raites y sin sesión es 401", async () => {
     const p = await nuevoUsuario();
     const datos = { zona: "croc", tipo: "ida", hora: "07:00", dias: [0], asientos: 3, aportacion: 15, paradas: ["Unidad CROC"] };

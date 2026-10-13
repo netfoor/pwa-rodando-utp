@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 160" width="220" height="160">
+  <circle cx="110" cy="84" r="70" fill="#E9DDFF"/>
+  <!-- celular -->
+  <rect x="72" y="18" width="76" height="132" rx="14" fill="#1E1B4B"/>
+  <rect x="78" y="28" width="64" height="112" rx="8" fill="#fff"/>
+  <rect x="98" y="21" width="24" height="4" rx="2" fill="#3A3566"/>
+  <!-- credencial -->
+  <rect x="86" y="40" width="48" height="32" rx="6" fill="#EEEAFB"/>
+  <circle cx="99" cy="53" r="7" fill="#FF8A3D"/>
+  <path d="M90 68 Q99 58 108 68 Z" fill="#FF8A3D"/>
+  <rect x="112" y="48" width="18" height="4" rx="2" fill="#1E1B4B"/>
+  <rect x="112" y="56" width="14" height="3" rx="1.5" fill="#A39FC9"/>
+  <rect x="112" y="62" width="16" height="3" rx="1.5" fill="#A39FC9"/>
+  <!-- campo correo -->
+  <rect x="86" y="80" width="48" height="12" rx="4" fill="#fff" stroke="#E4DFF5" stroke-width="1.5"/>
+  <text x="89" y="89" font-family="Arial" font-size="6" fill="#5F5B82">@utpuebla.edu.mx</text>
+  <rect x="86" y="98" width="48" height="12" rx="6" fill="#7C3AED"/>
+  <text x="110" y="106.5" text-anchor="middle" font-family="Arial" font-weight="700" font-size="6.5" fill="#FFFFFF">Verificar</text>
+  <!-- escudo -->
+  <g transform="translate(150 70)">
+    <path d="M0 0 L26 8 L26 30 C 26 44, 14 52, 0 58 C -14 52, -26 44, -26 30 L-26 8 Z" fill="#14B8A6" stroke="#fff" stroke-width="4"/>
+    <path d="M-10 28 L-3 35 L11 20" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <circle cx="44" cy="40" r="6" fill="#8B5CF6"/>
+  <circle cx="186" cy="30" r="4" fill="#FF8A3D"/>
+  <circle cx="36" cy="120" r="5" fill="#0EA5E9"/>
+</svg>

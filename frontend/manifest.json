@@ -1,0 +1,22 @@
+{
+  "name": "Rodando UTP · Raites entre estudiantes",
+  "short_name": "Rodando UTP",
+  "description": "Comparte raite con estudiantes de la UTP: rutas, horarios y calculadora de ahorro en gasolina.",
+  "lang": "es-MX",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1E1B4B",
+  "theme_color": "#1E1B4B",
+  "categories": ["travel", "education", "lifestyle"],
+  "icons": [
+    { "src": "img/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "img/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "img/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Buscar raite", "url": "./index.html#rutas", "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Calculadora de ahorro", "url": "./index.html#calculadora", "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

@@ -68,6 +68,13 @@ export async function listar({ zona, turno, tipo, libres, dia } = {}) {
     .filter(r => !libres || r.libres > 0);
 }
 
+/** Raites del conductor autenticado (incluye los desactivados), para su panel. */
+export async function listarMios(user) {
+  const { rows } = await query(`${SELECT} WHERE r.driver_id = $1 ORDER BY r.hora, r.id`, [user.id]);
+  const ocup = await ocupacion(rows.map(r => r.id));
+  return rows.map(r => toDto(r, ocup[r.id]));
+}
+
 export async function obtener(id, dia) {
   const { rows } = await query(`${SELECT} WHERE r.id = $1`, [id]);
   if (!rows.length) throw notFound("Raite no encontrado");
