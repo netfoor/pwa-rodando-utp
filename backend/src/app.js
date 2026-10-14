@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 import { env } from "./config/env.js";
 import api from "./routes/index.js";
 import { apiNotFound } from "./middlewares/notFound.js";
+import { invalidarAlEscribir } from "./middlewares/cache.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -57,6 +58,7 @@ app.use("/api", rateLimit({
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(openapi, { customSiteTitle: "Rodando UTP · API" }));
 app.get("/api/openapi.json", (req, res) => res.json(openapi));
+app.use("/api", invalidarAlEscribir);   // toda escritura exitosa vacía la caché
 app.use("/api", api);
 app.use("/api", apiNotFound);
 

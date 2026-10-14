@@ -56,6 +56,23 @@ Cualquier persona puede crear una cuenta de pasajero o conductor con un correo `
 
 `/admin.html` (solo `admin@utpuebla.edu.mx`): pestañas con **CRUD de zonas, testimonios y FAQ**, gestión de **usuarios** (cambiar rol, eliminar), edición y borrado de **raites**, **reservas** (cancelar) y **solicitudes** de conductor (aprobar). La información se refresca sola cada 4 segundos, así que los cambios hechos desde otra pestaña o desde la app aparecen sin recargar (indicador «En vivo» arriba).
 
+## Caché de la API
+
+Las lecturas públicas (`/zonas`, `/raites`, `/testimonios`, `/faq`, `/config`, `/stats`) se guardan en una **caché en memoria** del servidor (`middlewares/cache.js`) con TTL (5 min catálogos, 15 s raites, 30 s stats).
+
+- Cada respuesta lleva `X-Cache: MISS` (calculada y guardada) o `X-Cache: HIT` (servida de memoria, con cabecera `Age`).
+- Cualquier escritura exitosa (crear/editar/borrar raites, reservar, cancelar, CRUD de admin) **vacía la caché**, por lo que no se muestran lugares libres desactualizados.
+- `ETag` + `Cache-Control: no-cache`: el navegador revalida y recibe **304 Not Modified** sin cuerpo si no hubo cambios.
+- `GET /api/cache/stats` muestra entradas, hits, misses y % de aciertos; `DELETE /api/cache` (admin) la vacía.
+
+Demostración rápida:
+
+```bash
+curl -si localhost:3000/api/zonas | grep -i x-cache     # X-Cache: MISS
+curl -si localhost:3000/api/zonas | grep -i "x-cache\|age"   # X-Cache: HIT
+curl -s  localhost:3000/api/cache/stats                  # {"entradas":1,"hits":1,"misses":1,...}
+```
+
 ## Ver la base de datos (Adminer)
 
 `docker compose up` también levanta **Adminer** en http://localhost:8080 (sistema PostgreSQL, servidor `db`, usuario `rodando`, contraseña `rodando`, base `rodando`). Desde ahí se ven y editan las tablas visualmente; el panel de administración y Adminer muestran los mismos datos.

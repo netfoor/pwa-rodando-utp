@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import { validate } from "../middlewares/validate.js";
 import { requireAuth, optionalAuth, requireRole } from "../middlewares/auth.js";
 import { asyncHandler as h } from "../utils/asyncHandler.js";
+import { cache, limpiar, estadisticas } from "../middlewares/cache.js";
 import { env } from "../config/env.js";
 import { idParam } from "../schemas/common.js";
 import { registroSchema, loginSchema } from "../schemas/auth.schema.js";
@@ -38,10 +39,10 @@ r.post("/auth/registro", limiteAuth, validate({ body: registroSchema }), h(auth.
 r.post("/auth/login", limiteAuth, validate({ body: loginSchema }), h(auth.login));
 r.get("/auth/me", requireAuth, h(auth.me));
 
-r.get("/zonas", h(cat.zonas));
-r.get("/zonas/:id", h(cat.zona));
+r.get("/zonas", cache(300), h(cat.zonas));
+r.get("/zonas/:id", cache(300), h(cat.zona));
 
-r.get("/raites", validate({ query: listarRaitesQuery }), h(raites.listar));
+r.get("/raites", cache(15), validate({ query: listarRaitesQuery }), h(raites.listar));
 r.get("/raites/mios", requireAuth, h(raites.mios)); // antes de :id para que no se confunda
 r.get("/raites/:id", validate({ params: idParam }), h(raites.detalle));
 r.post("/raites", ...requireRole("conductor", "admin"), validate({ body: crearRaiteSchema }), h(raites.crear));
@@ -69,11 +70,15 @@ r.post("/admin/:recurso", ...soloAdmin, h(adminCtl.crearRecurso));
 r.patch("/admin/:recurso/:id", ...soloAdmin, h(adminCtl.actualizarRecurso));
 r.delete("/admin/:recurso/:id", ...soloAdmin, h(adminCtl.eliminarRecurso));
 
-r.get("/stats", h(cat.stats));
-r.get("/testimonios", h(cat.testimonios));
-r.get("/faq", h(cat.faq));
-r.get("/config", h(cat.config));
+r.get("/stats", cache(30), h(cat.stats));
+r.get("/testimonios", cache(300), h(cat.testimonios));
+r.get("/faq", cache(300), h(cat.faq));
+r.get("/config", cache(300), h(cat.config));
 r.post("/calculadora", validate({ body: calculadoraSchema }), h(cat.calculadora));
+
+// Estado de la caché (público, solo contadores) y vaciado manual (admin)
+r.get("/cache/stats", (req, res) => res.json(estadisticas()));
+r.delete("/cache", ...requireRole("admin"), (req, res) => { limpiar(); res.json({ ok: true, ...estadisticas() }); });
 
 r.get("/push/vapid-public-key", h(push.llavePublica));
 r.post("/push/subscribe", optionalAuth, validate({ body: suscripcionSchema }), h(push.suscribir));
