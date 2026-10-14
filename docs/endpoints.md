@@ -29,6 +29,8 @@ Error: `{ "error": { "code", "message", "details" } }`.
 | GET | `/admin/usuarios` | admin | Lista usuarios |
 | PATCH/DELETE | `/admin/usuarios/:id` | admin | Cambia rol / elimina (no a uno mismo) |
 | GET | `/admin/reservas` · `/admin/raites` | admin | Vistas globales (reservas más recientes, todos los raites) |
+| GET | `/cache/stats` | público | Contadores de la caché (entradas, hits, misses, aciertos) |
+| DELETE | `/cache` | admin | Vacía la caché |
 | GET | `/stats` | público | `{estudiantes, conductores, co2Toneladas}` |
 | GET | `/testimonios` · `/faq` · `/config` | público | Catálogos |
 | POST | `/calculadora` | público | `{rol, km, dias, pasajeros, rendimiento, precio}` → ahorros, CO₂, litros, barras |
