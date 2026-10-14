@@ -15,6 +15,8 @@ const ARCHIVOS = [
   "./js/api.js",
   "./js/app.js",
   "./js/panel.js",
+  "./js/admin.js",
+  "./admin.html",
   "./panel.html",
   "./manifest.json",
   "./img/logo.svg",

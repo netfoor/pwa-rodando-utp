@@ -85,6 +85,8 @@ const API = (() => {
     get user() { try { return JSON.parse(ls.get(USER_KEY)); } catch { return null; } },
     get token() { return ls.get(TOKEN_KEY); },
     logout,
+    /** Petición genérica (la usa el panel de administración). */
+    req: request,
 
     registro: async d => saveSession(await request("POST", "/auth/registro", d)),
     login: async d => saveSession(await request("POST", "/auth/login", d)),

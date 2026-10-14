@@ -592,3 +592,18 @@ textarea { width: 100%; font: inherit; padding: 12px 14px; border-radius: var(--
   .tbl td[data-l]::before { content: attr(data-l) ": "; color: var(--muted); font-weight: 600; }
   .acts { text-align: left; padding-top: 8px; }
 }
+
+/* ---------- Panel de administración ---------- */
+.admin-note { color: var(--muted); font-size: .9rem; margin: 0 0 14px; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.tab { border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: 99px; font-weight: 700; font-size: .88rem; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
+.tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+.tab .cnt { background: var(--bg-alt); color: var(--ink); border-radius: 99px; padding: 0 8px; font-size: .75rem; min-width: 22px; text-align: center; }
+.tab.active .cnt { background: var(--primary); color: var(--primary-ink); }
+.live { display: inline-flex; align-items: center; gap: 7px; font-size: .82rem; font-weight: 600; color: var(--muted); }
+.live i { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: pulse 1.6s infinite; }
+.live.off i { background: var(--danger); animation: none; }
+@keyframes pulse { 50% { opacity: .35; } }
+.dot-c { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.panel-page input[type=color] { height: 44px; padding: 4px; width: 100%; }
+@media (max-width: 520px) { .live #liveTxt { display: none; } }

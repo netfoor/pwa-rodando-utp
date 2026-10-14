@@ -31,5 +31,17 @@ services:
     ports:
       - "${PORT:-3000}:3000"
 
+  # Interfaz visual de la base de datos: http://localhost:8080
+  #   Sistema: PostgreSQL · Servidor: db · Usuario: rodando · Contraseña: rodando · Base: rodando
+  adminer:
+    image: adminer:4
+    depends_on:
+      - db
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+      ADMINER_DESIGN: pepa-linha
+    ports:
+      - "8080:8080"
+
 volumes:
   pgdata:
