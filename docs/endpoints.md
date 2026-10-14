@@ -23,6 +23,12 @@ Error: `{ "error": { "code", "message", "details" } }`.
 | POST | `/conductores/solicitud` | público | Formulario «Registro de conductor» |
 | GET | `/admin/solicitudes` | admin | Lista solicitudes (`?estado=`) |
 | POST | `/admin/solicitudes/:id/aprobar` | admin | Aprueba; si hay cuenta con ese correo, la hace conductor y publica su raite |
+| GET | `/admin/resumen` | admin | Conteos por tabla (tarjetas del panel) |
+| GET/POST | `/admin/{zonas\|testimonios\|faq}` | admin | Lista / crea registros del catálogo |
+| PATCH/DELETE | `/admin/{zonas\|testimonios\|faq}/:id` | admin | Edita / elimina (409 `EN_USO` si una zona tiene raites) |
+| GET | `/admin/usuarios` | admin | Lista usuarios |
+| PATCH/DELETE | `/admin/usuarios/:id` | admin | Cambia rol / elimina (no a uno mismo) |
+| GET | `/admin/reservas` · `/admin/raites` | admin | Vistas globales (reservas más recientes, todos los raites) |
 | GET | `/stats` | público | `{estudiantes, conductores, co2Toneladas}` |
 | GET | `/testimonios` · `/faq` · `/config` | público | Catálogos |
 | POST | `/calculadora` | público | `{rol, km, dias, pasajeros, rendimiento, precio}` → ahorros, CO₂, litros, barras |

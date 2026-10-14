@@ -75,6 +75,13 @@ export async function listarMios(user) {
   return rows.map(r => toDto(r, ocup[r.id]));
 }
 
+/** Todos los raites (activos o no); solo para el panel de administración. */
+export async function listarTodos() {
+  const { rows } = await query(`${SELECT} ORDER BY r.id`);
+  const ocup = await ocupacion(rows.map(r => r.id));
+  return rows.map(r => toDto(r, ocup[r.id]));
+}
+
 export async function obtener(id, dia) {
   const { rows } = await query(`${SELECT} WHERE r.id = $1`, [id]);
   if (!rows.length) throw notFound("Raite no encontrado");

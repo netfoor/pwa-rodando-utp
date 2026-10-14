@@ -18,6 +18,8 @@ import * as cat from "../controllers/catalogo.controller.js";
 import * as raites from "../controllers/raites.controller.js";
 import * as reservas from "../controllers/reservas.controller.js";
 import * as cond from "../controllers/conductores.controller.js";
+import * as adminCtl from "../controllers/admin.controller.js";
+import { rolUsuarioSchema } from "../schemas/admin.schema.js";
 import * as push from "../controllers/push.controller.js";
 import { health } from "../controllers/health.controller.js";
 
@@ -53,6 +55,19 @@ r.delete("/reservas/:codigo", requireAuth, validate({ params: codigoParam }), h(
 r.post("/conductores/solicitud", validate({ body: solicitudConductorSchema }), h(cond.solicitud));
 r.get("/admin/solicitudes", ...requireRole("admin"), h(cond.listar));
 r.post("/admin/solicitudes/:id/aprobar", ...requireRole("admin"), validate({ params: idParam }), h(cond.aprobar));
+
+// Panel de administración (solo admin). Las rutas fijas van antes de /admin/:recurso.
+const soloAdmin = requireRole("admin");
+r.get("/admin/resumen", ...soloAdmin, h(adminCtl.resumen));
+r.get("/admin/usuarios", ...soloAdmin, h(adminCtl.usuarios));
+r.patch("/admin/usuarios/:id", ...soloAdmin, validate({ params: idParam, body: rolUsuarioSchema }), h(adminCtl.cambiarRol));
+r.delete("/admin/usuarios/:id", ...soloAdmin, validate({ params: idParam }), h(adminCtl.eliminarUsuario));
+r.get("/admin/reservas", ...soloAdmin, h(adminCtl.reservas));
+r.get("/admin/raites", ...soloAdmin, h(adminCtl.raites));
+r.get("/admin/:recurso", ...soloAdmin, h(adminCtl.listarRecurso));          // zonas | testimonios | faq
+r.post("/admin/:recurso", ...soloAdmin, h(adminCtl.crearRecurso));
+r.patch("/admin/:recurso/:id", ...soloAdmin, h(adminCtl.actualizarRecurso));
+r.delete("/admin/:recurso/:id", ...soloAdmin, h(adminCtl.eliminarRecurso));
 
 r.get("/stats", h(cat.stats));
 r.get("/testimonios", h(cat.testimonios));

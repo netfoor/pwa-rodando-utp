@@ -52,6 +52,14 @@ Cualquier persona puede crear una cuenta de pasajero o conductor con un correo `
 
 `/panel.html` (enlace «Mi panel» en el menú): un conductor inicia sesión y puede **agregar, editar, pausar y eliminar** sus raites. Usa `GET /api/raites/mios`, `POST/PATCH/DELETE /api/raites`.
 
+## Panel de administración (más CRUDs, con actualización en vivo)
+
+`/admin.html` (solo `admin@utpuebla.edu.mx`): pestañas con **CRUD de zonas, testimonios y FAQ**, gestión de **usuarios** (cambiar rol, eliminar), edición y borrado de **raites**, **reservas** (cancelar) y **solicitudes** de conductor (aprobar). La información se refresca sola cada 4 segundos, así que los cambios hechos desde otra pestaña o desde la app aparecen sin recargar (indicador «En vivo» arriba).
+
+## Ver la base de datos (Adminer)
+
+`docker compose up` también levanta **Adminer** en http://localhost:8080 (sistema PostgreSQL, servidor `db`, usuario `rodando`, contraseña `rodando`, base `rodando`). Desde ahí se ven y editan las tablas visualmente; el panel de administración y Adminer muestran los mismos datos.
+
 ## Variables de entorno
 
 Ver [.env.example](.env.example).
@@ -87,7 +95,7 @@ Tabla completa en [docs/endpoints.md](docs/endpoints.md).
 # Necesita un Postgres con una base cuyo nombre termine en _test (se reinicia en cada corrida)
 docker run -d --rm --name pg-test -e POSTGRES_USER=rodando -e POSTGRES_PASSWORD=rodando \
   -e POSTGRES_DB=rodando_test -p 55432:5432 postgres:16-alpine
-cd backend && npm test          # vitest + supertest (31 pruebas)
+cd backend && npm test          # vitest + supertest (35 pruebas)
 npm run lint
 ```
 
