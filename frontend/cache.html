@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio de caché · Rodando UTP</title>
+  <meta name="description" content="Laboratorio interactivo de la Cache Storage API: caches.open, keys, match, put, add, addAll y delete en vivo.">
+  <meta name="theme-color" content="#1E1B4B">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-page">
+
+  <div class="offline-bar" id="offlineBar">Sin conexión · el laboratorio sigue funcionando con la caché guardada</div>
+
+  <header class="header scrolled">
+    <div class="container header__inner">
+      <a href="index.html" class="brand" aria-label="Volver al inicio">
+        <img src="img/logo.svg" alt="Logo de Rodando UTP" class="brand__logo" width="48" height="48">
+        <span class="brand__text">
+          <span class="brand__name">Rodando <b>UTP</b></span>
+          <span class="brand__slogan">Laboratorio de caché · Cache Storage API</span>
+        </span>
+      </a>
+      <div class="header__actions">
+        <span class="pill-s" id="swPill">Service Worker: verificando…</span>
+        <a class="btn btn--sm btn--primary" href="index.html">← Volver al sitio</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container panel lab">
+
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">API Caché</span>
+        <h2>Laboratorio de caché</h2>
+        <p class="lab-lead">Ejecuta en vivo los métodos de la <b>Cache Storage API</b> que usa el service worker de Rodando UTP.
+          Cada operación queda registrada en la bitácora con su resultado. <i>caches</i> es un objeto global: funciona
+          desde el service worker <b>y</b> desde esta página.</p>
+      </div>
+      <div class="lab-meta">
+        <span class="pill-s" id="quotaPill">Cuota: …</span>
+        <button class="btn btn--sm btn--primary" id="btnDemo">▶ Demostración automática</button>
+        <button class="btn btn--sm btn--outline" id="refreshAll">↻ Actualizar todo</button>
+      </div>
+    </div>
+
+    <!-- 1 · caches.* -->
+    <section class="panel-card lab-card" aria-labelledby="t1">
+      <header class="lab-card__head">
+        <span class="lab-card__n">1</span>
+        <div>
+          <h3 id="t1">Almacenamiento: <code>caches.*</code></h3>
+          <p>Lista las cachés del navegador (<code>caches.keys()</code>), crea una (<code>caches.open()</code>),
+             consulta si existe (<code>caches.has()</code>) o la borra por completo (<code>caches.delete()</code>).</p>
+        </div>
+      </header>
+
+      <div class="lab-actions">
+        <label class="field field--grow">
+          <span>Nombre de caché</span>
+          <input type="text" id="cacheName" value="lab-demo" spellcheck="false" autocomplete="off">
+        </label>
+        <button class="btn btn--primary" id="btnOpen">caches.open()</button>
+        <button class="btn btn--outline" id="btnHas">caches.has()</button>
+        <button class="btn btn--danger" id="btnDeleteCache">caches.delete()</button>
+      </div>
+
+      <div class="lab-list" id="cachesList" aria-live="polite"></div>
+    </section>
+
+    <!-- 2 · cache.keys() -->
+    <section class="panel-card lab-card" aria-labelledby="t2">
+      <header class="lab-card__head">
+        <span class="lab-card__n">2</span>
+        <div>
+          <h3 id="t2">Entradas: <code>cache.keys()</code></h3>
+          <p>Enumeración de lo que hay dentro de la caché seleccionada (por defecto la que usa el service worker).
+             Con <code>cache.match()</code> se comprueba si una URL está guardada y con
+             <code>cache.delete()</code> se borra solo esa entrada.</p>
+        </div>
+      </header>
+
+      <p class="lab-hint">Caché seleccionada: <b id="selName">—</b>
+        <button class="btn btn--sm btn--outline" id="btnReload">Releer</button></p>
+
+      <div class="panel-card table-wrap lab-table">
+        <table class="tbl" id="entriesTbl">
+          <thead>
+            <tr><th>URL guardada</th><th>Tipo</th><th>Tamaño</th><th class="lab-th-acts">Acciones</th></tr>
+          </thead>
+          <tbody id="entriesRows"></tbody>
+        </table>
+        <div class="empty" id="entriesEmpty" hidden>Sin entradas todavía. Usa las operaciones del paso 3 o navega por el sitio para que el service worker llene la caché.</div>
+      </div>
+    </section>
+
+    <!-- 3 · Operaciones -->
+    <section class="panel-card lab-card" aria-labelledby="t3">
+      <header class="lab-card__head">
+        <span class="lab-card__n">3</span>
+        <div>
+          <h3 id="t3">Operaciones de escritura y lectura</h3>
+          <p><code>cache.add()</code> y <code>cache.addAll()</code> descargan y guardan en un solo paso;
+             <code>cache.put()</code> guarda una <code>Response</code> que tú construyes;
+             <code>cache.matchAll()</code> devuelve todas las coincidencias.</p>
+        </div>
+      </header>
+
+      <label class="field">
+        <span>URL a guardar / buscar (ruta relativa o absoluta)</span>
+        <input type="text" id="opUrl" value="img/logo.svg" spellcheck="false" autocomplete="off">
+      </label>
+
+      <div class="lab-actions">
+        <button class="btn btn--primary" id="btnAdd">cache.add()</button>
+        <button class="btn btn--outline" id="btnAddAll">cache.addAll() · 3 recursos</button>
+        <button class="btn btn--outline" id="btnPut">cache.put() · Response propio</button>
+        <button class="btn btn--outline" id="btnMatch">cache.match()</button>
+        <button class="btn btn--outline" id="btnMatchAll">cache.matchAll()</button>
+      </div>
+      <p class="lab-hint lab-hint--soft">
+        Para probar la red de respaldo: pega una URL que no exista (por ejemplo <code>img/no-existe.svg</code>),
+        ejecuta <code>cache.add()</code> y observa el error <code>TypeError</code> registrado en la bitácora:
+        la caché solo guarda respuestas exitosas.
+      </p>
+    </section>
+
+    <!-- 4 · Bitácora -->
+    <section class="panel-card lab-card" aria-labelledby="t4">
+      <header class="lab-card__head">
+        <span class="lab-card__n">4</span>
+        <div>
+          <h3 id="t4">Bitácora de operaciones</h3>
+          <p>Cada llamada a la API de caché, con su argumento y resultado. Refresca la página: las que hizo el
+             service worker al instalar la app ya aparecen.</p>
+        </div>
+      </header>
+
+      <div class="lab-log" id="log" role="log" aria-live="polite"></div>
+      <div class="lab-actions">
+        <button class="btn btn--sm btn--outline" id="btnClearLog">Limpiar bitácora</button>
+      </div>
+    </section>
+
+    <!-- Referencia rápida -->
+    <section class="panel-card lab-card lab-cheatsheet" aria-labelledby="t5">
+      <header class="lab-card__head">
+        <span class="lab-card__n">5</span>
+        <div>
+          <h3 id="t5">Qué está cacheando Rodando UTP</h3>
+          <p>El service worker (<code>sw.js</code>) aplica una estrategia distinta según el recurso.</p>
+        </div>
+      </header>
+      <ul class="ticks lab-ticks">
+        <li><b>Precaching en <code>install</code></b>: <code>caches.open()</code> + <code>cache.addAll()</code> con la app estática (HTML, CSS, JS, iconos).</li>
+        <li><b>Estáticos y fuentes</b>: <i>network first</i> con respaldo en caché; si falla la red, se sirve la copia guardada.</li>
+        <li><b>API pública (GET)</b>: <i>network first</i>; la respuesta se guarda con <code>cache.put()</code> y sin red se responde la última copia.</li>
+        <li><b>Sesión y reservas</b>: nunca se cachean (datos personales y escrituras).</li>
+        <li><b>Limpieza en <code>activate</code></b>: <code>caches.keys()</code> + <code>caches.delete()</code> de las versiones anteriores.</li>
+      </ul>
+      <p class="lab-hint lab-hint--soft">
+        Prueba el modo offline: en Chrome/Edge abre DevTools → pestaña <b>Application</b> → <b>Service Workers</b>
+        → marca <b>Offline</b> (o DevTools → <b>Network</b> → <b>Offline</b>) y recarga: el sitio y esta página siguen
+        respondiendo desde la caché.
+      </p>
+    </section>
+
+    <p class="lab-foot">Proyecto académico · Aplicaciones Web Progresivas · Universidad Tecnológica de Puebla</p>
+  </main>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <script src="js/cache.js"></script>
+</body>
+</html>
