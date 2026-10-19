@@ -365,7 +365,8 @@ async function demo(rapido = false) {
 
   await ejecutar("caches.has()", nombre, () => caches.has(nombre));      // caches.has()
   await cuota();
-  await pintarEntradas();
+  await listarCaches();
+  await pintarEntradas(true);
   toast("✓ Demostración completada");
   $("#btnDemo").disabled = false;
 }
