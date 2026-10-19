@@ -20,7 +20,7 @@ IMG = BASE / "img"
 SALIDA = BASE / "API_Cache_PWA_Rodando_UTP.docx"
 
 # ── Datos que se actualizan al publicar ───────────────────────────────────────
-URL_APP = "https://rodando-utp.onrender.com"
+URL_APP = "https://rodando-utp-m12i.onrender.com"
 REPO = "https://github.com/netfoor/pwa-rodando-utp"
 FECHA = "18 de octubre de 2026"
 PERIODO = "Periodo Septiembre–Diciembre 2026"
@@ -515,14 +515,16 @@ body(
 
 h2("4.5 Verificación y resultados")
 body(
-    "La aplicación se probó en local con Chrome sobre el contenedor Docker del proyecto (HTTP en localhost, que el "
-    "navegador considera contexto seguro). En la primera visita el service worker se instaló y precacheó 21 "
-    "recursos; tras navegar por la aplicación, la caché pasó a 23 entradas, incluidas las respuestas de la API "
-    "pública guardadas con cache.put(). La Figura 1 muestra la aplicación en marcha."
+    "La aplicación está publicada en Render (Web Service Docker con PostgreSQL administrado) y se verificó tanto en "
+    "local, sobre el contenedor Docker del proyecto, como en la URL pública " + URL_APP + ", que el navegador trata "
+    "como contexto seguro por usar HTTPS y donde el service worker se registra correctamente. En la primera visita "
+    "el service worker se instaló y precacheó 21 recursos; tras navegar por la aplicación, la caché pasó a 23 "
+    "entradas, incluidas las respuestas de la API pública guardadas con cache.put(). La Figura 1 muestra la "
+    "aplicación en marcha."
 )
 
-figura("01-home.png", "Figura 1. Página principal de Rodando UTP servida por la PWA; el service worker quedó activo y "
-                      "precacheó los archivos base de la aplicación.")
+figura("01-home.png", "Figura 1. Página principal de Rodando UTP publicada en Render, servida por la PWA; el "
+                      "service worker quedó activo y precacheó los archivos base de la aplicación.")
 
 body(
     "El laboratorio de caché confirmó el contenido de la caché creada por el service worker: caches.keys() listó "
@@ -542,10 +544,11 @@ figura("03-lab-demo.png", "Figura 3. Bitácora de la demostración automática: 
                           "cache.put(), lectura con cache.match(), descarga con cache.add(), borrado y comprobación.")
 
 body(
-    "Por último se cortó la red con las herramientas de desarrollo y se recargó el laboratorio. La página respondió "
-    "desde la caché: el service worker siguió activo, la barra de aviso sin conexión apareció y las entradas "
-    "aumentaron a 23 porque también se guardaron las respuestas de la API pública (Figura 4). Con esto queda "
-    "comprobado el arranque sin conexión, que es el objetivo principal de la caché en una PWA."
+    "Por último se cortó la red con las herramientas de desarrollo y se recargó el laboratorio en la aplicación "
+    "publicada. La página respondió desde la caché: el service worker siguió activo, la barra de aviso sin conexión "
+    "apareció y las entradas aumentaron a 23 porque también se guardaron las respuestas de la API pública "
+    "(Figura 4). Con esto queda comprobado el arranque sin conexión, que es el objetivo principal de la caché en "
+    "una PWA."
 )
 figura("04-offline.png", "Figura 4. Recarga sin conexión: la aplicación responde desde Cache Storage (23 entradas) y "
                           "muestra el aviso de que se está usando la versión guardada.")
