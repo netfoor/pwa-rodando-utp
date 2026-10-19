@@ -7,13 +7,15 @@
    - Notificaciones push: muestra el aviso y abre #rutas.
    (Sube la versión al cambiar archivos.)
    ========================================================= */
-const CACHE = "rodando-utp-v2";
+const CACHE = "rodando-utp-v3";
 const ARCHIVOS = [
   "./",
   "./index.html",
+  "./cache.html",
   "./css/styles.css",
   "./js/api.js",
   "./js/app.js",
+  "./js/cache.js",
   "./js/panel.js",
   "./js/admin.js",
   "./admin.html",

@@ -17,6 +17,7 @@
   ],
   "shortcuts": [
     { "name": "Buscar raite", "url": "./index.html#rutas", "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Calculadora de ahorro", "url": "./index.html#calculadora", "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Calculadora de ahorro", "url": "./index.html#calculadora", "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Laboratorio de caché", "url": "./cache.html", "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

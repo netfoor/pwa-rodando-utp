@@ -1,6 +1,6 @@
 # Rodando UTP
 
-PWA para que estudiantes de la Universidad Tecnológica de Puebla compartan raite (carpooling) hacia el campus: rutas en un mapa ilustrado, horarios, reservaciones con código, calculadora de ahorro y panel de conductor con CRUD de raites. Funciona sin conexión para la parte estática y degrada con elegancia cuando la API no responde.
+PWA para que estudiantes de la Universidad Tecnológica de Puebla compartan raite (carpooling) hacia el campus: rutas en un mapa ilustrado, horarios, reservaciones con código, calculadora de ahorro y panel de conductor con CRUD de raites. Funciona sin conexión para la parte estática y degrada con elegancia cuando la API no responde. Incluye un [laboratorio de caché](#laboratorio-de-caché-cache-storage-api) que demuestra la Cache Storage API en vivo.
 
 - **Frontend:** HTML/CSS/JS vanilla (`frontend/`), servido por Express.
 - **Backend:** Node.js 20 + Express 4 (ES modules) con validación zod, JWT y bcrypt.
@@ -73,6 +73,21 @@ curl -si localhost:3000/api/zonas | grep -i "x-cache\|age"   # X-Cache: HIT
 curl -s  localhost:3000/api/cache/stats                  # {"entradas":1,"hits":1,"misses":1,...}
 ```
 
+## Laboratorio de caché (Cache Storage API)
+
+`/cache.html` (enlace «Caché» en el menú): página que ejecuta en vivo los métodos de la **Cache API** sobre las cachés reales del navegador y registra cada llamada en una bitácora.
+
+- **`caches.*`** — `keys()` para listar cachés, `open()` para crear/abrir, `has()` para comprobar y `delete()` para borrar la caché completa.
+- **`cache.*`** — `keys()` para enumerar entradas (URL, tipo y tamaño), `match()` / `matchAll()` para leer, `add()` / `addAll()` para descargar y guardar, `put()` para guardar una `Response` propia y `delete()` para borrar una entrada.
+- Muestra el estado del service worker y la cuota con `navigator.storage.estimate()`.
+- Botón **Demostración automática**: ejecuta `caches.open()` → `cache.put()` → `cache.match()` → `cache.add()` → `cache.delete()` → `caches.has()` y lo va escribiendo en la bitácora. `cache.html?demo=1` la ejecuta sola (útil para capturas).
+
+El laboratorio usa la misma caché versionada que el service worker (`rodando-utp-v3`), así que también sirve para ver qué quedó guardado para el modo sin conexión.
+
+## Documento de la actividad
+
+[`docs/api-cache/API_Cache_PWA_Rodando_UTP.docx`](docs/api-cache/API_Cache_PWA_Rodando_UTP.docx) (APA 7): qué es la caché en una PWA, cómo funciona, tabla de métodos de la Cache Storage API, implementación en el proyecto y evidencias. Se regenera con `python3 docs/api-cache/generar_doc_api_cache.py` (requiere `python-docx`; las capturas están en `docs/api-cache/img/`).
+
 ## Ver la base de datos (Adminer)
 
 `docker compose up` también levanta **Adminer** en http://localhost:8080 (sistema PostgreSQL, servidor `db`, usuario `rodando`, contraseña `rodando`, base `rodando`). Desde ahí se ven y editan las tablas visualmente; el panel de administración y Adminer muestran los mismos datos.
@@ -112,13 +127,13 @@ Tabla completa en [docs/endpoints.md](docs/endpoints.md).
 # Necesita un Postgres con una base cuyo nombre termine en _test (se reinicia en cada corrida)
 docker run -d --rm --name pg-test -e POSTGRES_USER=rodando -e POSTGRES_PASSWORD=rodando \
   -e POSTGRES_DB=rodando_test -p 55432:5432 postgres:16-alpine
-cd backend && npm test          # vitest + supertest (35 pruebas)
+cd backend && npm test          # vitest + supertest (39 pruebas)
 npm run lint
 ```
 
 Cubren health, zonas, raites con filtros y CRUD, registro/login, reservas (incluida concurrencia sin sobreventa), calculadora, solicitudes de conductor y push. Otra base: `TEST_DATABASE_URL=...`.
 
-## Despliegue en Render
+## Despliegue en Render (gratis)
 
 1. Sube este repositorio a GitHub.
 2. En [Render](https://render.com): **New → Blueprint**, elige el repositorio y confirma. Render lee `render.yaml` y crea el Web Service Docker `rodando-utp` y la base `rodando-db`.
