@@ -21,7 +21,7 @@ SALIDA = BASE / "API_Cache_PWA_Rodando_UTP.docx"
 
 # ── Datos que se actualizan al publicar ───────────────────────────────────────
 URL_APP = "https://rodando-utp.onrender.com"
-REPO = "https://github.com/<usuario>/rodando-utp"
+REPO = "https://github.com/netfoor/pwa-rodando-utp"
 FECHA = "18 de octubre de 2026"
 PERIODO = "Periodo Septiembre–Diciembre 2026"
 
