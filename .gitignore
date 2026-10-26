@@ -4,3 +4,5 @@ node_modules/
 coverage/
 *.zip
 session.md
+
+docs/subproducto5/_build/

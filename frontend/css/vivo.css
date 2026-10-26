@@ -1,0 +1,142 @@
+/* =========================================================
+   Rodando Live · seguimiento del viaje
+   ========================================================= */
+
+.vivo-page .panel { padding-bottom: 48px; }
+.vivo-pick { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.vivo-pick .field { margin: 0; min-width: 240px; }
+.vivo-pick .field select { min-width: 240px; }
+.vivo-pick .pill-s { padding: 9px 14px; }
+
+.vivo-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, .85fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.vivo-map-card { position: relative; padding: 8px; overflow: hidden; }
+.vivo-map {
+  height: clamp(420px, 62vh, 620px);
+  border-radius: calc(var(--r) - 8px);
+  background: var(--bg-alt);
+  z-index: 0;
+}
+.vivo-map .leaflet-control-attribution { font-size: 11px; }
+.vivo-map .leaflet-bar a { color: var(--ink); }
+
+.vivo-badge {
+  position: absolute; top: 20px; right: 20px; z-index: 500;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 13px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--line);
+  font-size: .82rem; font-weight: 700; color: var(--muted);
+  box-shadow: var(--shadow-sm);
+}
+.vivo-badge::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.vivo-badge.on { color: var(--ink); }
+.vivo-badge.on::before { background: var(--accent); box-shadow: 0 0 0 4px rgba(20, 184, 166, .18); }
+.vivo-badge.off::before { background: var(--danger); }
+
+.vivo-leyenda {
+  position: absolute; left: 20px; bottom: 20px; z-index: 500;
+  display: flex; flex-wrap: wrap; gap: 12px;
+  padding: 8px 12px; border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--line); font-size: .76rem; color: var(--muted);
+}
+.vivo-leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+.lg { width: 16px; height: 4px; border-radius: 99px; display: inline-block; }
+.lg--ruta { background: var(--primary); }
+.lg--parada { width: 9px; height: 9px; background: var(--surface); border: 2px solid var(--primary); }
+.lg--campus { width: 9px; height: 9px; border-radius: 2px; background: var(--accent); }
+.lg--auto { width: 10px; height: 10px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 3px rgba(30, 27, 75, .18); }
+
+.vivo-hint { padding: 14px 10px 6px; margin: 0; color: var(--danger); font-size: .85rem; }
+
+.vivo-side { display: grid; gap: 18px; }
+.vivo-side h3 { margin-bottom: 8px; }
+.vivo-label { font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.vivo-eta__num { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 0; font-family: var(--font-display); }
+.vivo-eta__num b { font-size: clamp(2.6rem, 6vw, 3.4rem); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.vivo-eta__num span { font-size: 1rem; font-weight: 600; color: var(--muted); }
+.vivo-eta__sub { color: var(--muted); margin: 6px 0 14px; font-size: .92rem; }
+.vivo-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.vivo-update { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.vivo-warn { margin: 12px 0 0; padding: 9px 12px; border-left: 3px solid var(--danger); background: rgba(229, 72, 77, .08); font-size: .84rem; color: var(--ink); }
+
+.pill-s.warn { background: rgba(229, 72, 77, .12); color: var(--danger); }
+.pill-s.live { background: var(--accent); color: var(--accent-ink); }
+
+.vivo-sub { color: var(--muted); font-size: .9rem; margin: 0 0 12px; }
+.vivo-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.vivo-actions .btn { flex: 1 1 140px; }
+.vivo-code { margin: 0 0 2px; font-size: .9rem; color: var(--muted); }
+.vivo-code b { font-family: var(--font-display); font-size: 1.15rem; color: var(--ink); letter-spacing: .04em; }
+.vivo-code + .vivo-sub { margin-bottom: 0; }
+
+.vivo-gps { margin: 12px 0 0; padding: 10px 12px; border-radius: var(--r-sm); background: var(--bg-alt); font-size: .82rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.vivo-gps.bad { background: rgba(229, 72, 77, .1); color: var(--danger); }
+
+.vivo-count { display: inline-block; min-width: 24px; padding: 1px 8px; border-radius: 99px; background: var(--primary); color: var(--primary-ink); font-size: .78rem; text-align: center; vertical-align: 2px; }
+.vivo-reqs { display: grid; gap: 10px; }
+.vivo-req { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 12px; }
+.vivo-req__top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.vivo-req__top b { font-size: .95rem; }
+.vivo-req__top span { font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.vivo-req p { margin: 3px 0 0; font-size: .84rem; color: var(--muted); }
+.vivo-req__acts { display: flex; gap: 8px; margin-top: 10px; }
+.vivo-req__acts .btn { flex: 1; }
+.vivo-req__acts .btn--sm { padding: .42em .8em; font-size: .84rem; }
+
+.vivo-notify { margin-top: 4px; width: 100%; }
+.vivo-stops { margin: 0; padding: 0 0 0 20px; display: grid; gap: 8px; color: var(--ink-2); font-size: .9rem; }
+.vivo-stops li::marker { color: var(--primary); font-weight: 700; }
+.vivo-stops li.done { color: var(--muted); text-decoration: line-through; }
+.vivo-stops li.next { font-weight: 700; color: var(--ink); }
+
+/* Marcadores del mapa */
+.stop-pin, .campus-pin {
+  display: grid; place-items: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--surface); border: 3px solid var(--primary);
+  box-shadow: 0 2px 6px rgba(30, 27, 75, .25);
+  font-size: 10px; font-weight: 800; color: var(--primary);
+  font-family: var(--font-display);
+}
+.campus-pin { border-radius: 4px; border-color: var(--accent); color: var(--accent-ink); background: var(--accent); }
+.car-pin {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--ink); color: #fff;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 6px rgba(124, 58, 237, .22), 0 4px 12px rgba(30, 27, 75, .35);
+}
+.car-pin svg { width: 19px; height: 19px; display: block; }
+.car-pin.frio { background: var(--muted); box-shadow: 0 0 0 6px rgba(95, 91, 130, .16); }
+.leaflet-marker-icon:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+
+@media (min-width: 981px) {
+  .vivo-map-card { position: sticky; top: calc(var(--header-h) + 16px); }
+}
+@media (max-width: 980px) {
+  .vivo-grid { grid-template-columns: minmax(0, 1fr); }
+  .vivo-map { height: 440px; }
+  .vivo-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .vivo-eta, .vivo-pasos { grid-column: span 2; }
+}
+@media (max-width: 760px) {
+  .vivo-pick { width: 100%; }
+  .vivo-pick .field, .vivo-pick .field select { min-width: 0; width: 100%; flex: 1; }
+  .vivo-map { height: 360px; }
+  .vivo-side { grid-template-columns: minmax(0, 1fr); }
+  .vivo-eta, .vivo-pasos { grid-column: auto; }
+  .vivo-badge { top: 16px; right: 16px; }
+  .vivo-leyenda { left: 16px; bottom: 16px; gap: 9px; }
+  .vivo-page .header__actions { gap: 6px; }
+  .vivo-page .header__actions .who,
+  .vivo-page .header__actions .vivo-panel-link { display: none; }
+}
+@media (max-width: 600px) {
+  .vivo-page .brand__text { display: none; }
+}

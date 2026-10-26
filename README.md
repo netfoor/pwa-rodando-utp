@@ -1,6 +1,6 @@
 # Rodando UTP
 
-PWA para que estudiantes de la Universidad Tecnológica de Puebla compartan raite (carpooling) hacia el campus: rutas en un mapa ilustrado, horarios, reservaciones con código, calculadora de ahorro y panel de conductor con CRUD de raites. Funciona sin conexión para la parte estática y degrada con elegancia cuando la API no responde. Incluye un [laboratorio de caché](#laboratorio-de-caché-cache-storage-api) que demuestra la Cache Storage API en vivo.
+PWA para que estudiantes de la Universidad Tecnológica de Puebla compartan raite (carpooling) hacia el campus: rutas en un mapa ilustrado, horarios, reservaciones con código, calculadora de ahorro, panel de conductor con CRUD de raites y seguimiento del auto en vivo. Funciona sin conexión para la parte estática y degrada con elegancia cuando la API no responde. Incluye un [laboratorio de caché](#laboratorio-de-caché-cache-storage-api) que demuestra la Cache Storage API en vivo.
 
 - **Frontend:** HTML/CSS/JS vanilla (`frontend/`), servido por Express.
 - **Backend:** Node.js 20 + Express 4 (ES modules) con validación zod, JWT y bcrypt.
@@ -52,6 +52,19 @@ Cualquier persona puede crear una cuenta de pasajero o conductor con un correo `
 
 `/panel.html` (enlace «Mi panel» en el menú): un conductor inicia sesión y puede **agregar, editar, pausar y eliminar** sus raites. Usa `GET /api/raites/mios`, `POST/PATCH/DELETE /api/raites`.
 
+## Seguimiento en vivo
+
+`/vivo.html` (enlace «En vivo» en el menú): el conductor abre el viaje del día, comparte la ubicación de su teléfono y los pasajeros ven el auto en el mapa con la llegada estimada a su parada.
+
+- El conductor pulsa **Iniciar y compartir ubicación**; el navegador pide permiso de GPS y envía posiciones mientras la página siga abierta (Web Geolocation API + `watchPosition`). Al terminar, la posición se borra.
+- El pasajero elige parada y envía una **solicitud**; queda `pendiente` hasta que el conductor la acepta. Aceptar consume un asiento real (sin sobreventa).
+- Los cambios viajan por **WebSocket** (`/api/vivo/ws`, autenticado con JWT) a una sala por raite y fecha; si el canal falla, la página se refresca cada 20 s.
+- Privacidad: la posición solo la ven el conductor y los participantes (`confirmada` o `pendiente`). Antes de solicitar se muestra la ruta y la estimación, sin el auto. Las posiciones de más de 90 s se descartan y las lecturas con precisión mayor a 30 m se rechazan.
+- La última posición se guarda en **Cache Storage** (`rodando-live-v1`) para mostrarla sin conexión; el service worker (`v4`) nunca cachea `/api/vivo` porque incluye datos de la reserva.
+- Límites reales del prototipo: el GPS solo funciona con HTTPS (o localhost) y con la PWA abierta; en segundo plano el sistema operativo puede suspender el envío.
+
+Prueba rápida (dos ventanas, lunes a sábado): entra como `mariana.lopez@utpuebla.edu.mx` / `Demo1234!`, abre el primer raite y pulsa **Iniciar y compartir ubicación**. En otra ventana entra como pasajero, solicita un lugar y verás el auto aparecer cuando el conductor acepte.
+
 ## Panel de administración (más CRUDs, con actualización en vivo)
 
 `/admin.html` (solo `admin@utpuebla.edu.mx`): pestañas con **CRUD de zonas, testimonios y FAQ**, gestión de **usuarios** (cambiar rol, eliminar), edición y borrado de **raites**, **reservas** (cancelar) y **solicitudes** de conductor (aprobar). La información se refresca sola cada 4 segundos, así que los cambios hechos desde otra pestaña o desde la app aparecen sin recargar (indicador «En vivo» arriba).
@@ -82,7 +95,7 @@ curl -s  localhost:3000/api/cache/stats                  # {"entradas":1,"hits":
 - Muestra el estado del service worker y la cuota con `navigator.storage.estimate()`.
 - Botón **Demostración automática**: ejecuta `caches.open()` → `cache.put()` → `cache.match()` → `cache.add()` → `cache.delete()` → `caches.has()` y lo va escribiendo en la bitácora. `cache.html?demo=1` la ejecuta sola (útil para capturas).
 
-El laboratorio usa la misma caché versionada que el service worker (`rodando-utp-v3`), así que también sirve para ver qué quedó guardado para el modo sin conexión.
+El laboratorio usa la misma caché versionada que el service worker (`rodando-utp-v4`), así que también sirve para ver qué quedó guardado para el modo sin conexión.
 
 ## Documento de la actividad
 
@@ -127,11 +140,11 @@ Tabla completa en [docs/endpoints.md](docs/endpoints.md).
 # Necesita un Postgres con una base cuyo nombre termine en _test (se reinicia en cada corrida)
 docker run -d --rm --name pg-test -e POSTGRES_USER=rodando -e POSTGRES_PASSWORD=rodando \
   -e POSTGRES_DB=rodando_test -p 55432:5432 postgres:16-alpine
-cd backend && npm test          # vitest + supertest (39 pruebas)
+cd backend && npm test          # vitest + supertest (45 pruebas)
 npm run lint
 ```
 
-Cubren health, zonas, raites con filtros y CRUD, registro/login, reservas (incluida concurrencia sin sobreventa), calculadora, solicitudes de conductor y push. Otra base: `TEST_DATABASE_URL=...`.
+Cubren health, zonas, raites con filtros y CRUD, registro/login, reservas (incluida concurrencia sin sobreventa), calculadora, solicitudes de conductor, push y seguimiento en vivo (posición, ETA, solicitudes, privacidad y WebSocket). Otra base: `TEST_DATABASE_URL=...`.
 
 ## Despliegue en Render (gratis)
 

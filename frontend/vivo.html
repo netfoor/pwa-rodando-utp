@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seguimiento en vivo · Rodando UTP</title>
+  <meta name="theme-color" content="#1E1B4B">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/vivo.css">
+</head>
+<body class="panel-page vivo-page">
+  <header class="header scrolled">
+    <div class="container header__inner">
+      <a href="index.html" class="brand" aria-label="Volver al inicio">
+        <img src="img/logo.svg" alt="Logo de Rodando UTP" class="brand__logo" width="48" height="48">
+        <span class="brand__text"><span class="brand__name">Rodando <b>UTP</b></span><span class="brand__slogan">Seguimiento en vivo</span></span>
+      </a>
+      <div class="header__actions">
+        <span id="who" class="who" hidden></span>
+        <button class="btn btn--sm btn--outline" id="logoutBtn" hidden>Cerrar sesión</button>
+        <a class="btn btn--sm btn--outline vivo-panel-link" href="panel.html">Mi panel</a>
+        <a class="btn btn--sm btn--primary" href="index.html">← Inicio</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container panel">
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">Rodando Live</span>
+        <h2>El raite, en tiempo real</h2>
+      </div>
+      <div class="vivo-pick">
+        <label class="field"><span>Raite de hoy</span><select id="raiteSel" aria-label="Elige el raite"></select></label>
+        <span class="pill-s" id="fechaTxt"></span>
+      </div>
+    </div>
+
+    <div class="vivo-grid">
+      <section class="panel-card vivo-map-card" aria-label="Mapa del recorrido">
+        <div id="vivoMap" class="vivo-map"></div>
+        <div class="vivo-leyenda" id="leyenda" aria-hidden="true">
+          <span><i class="lg lg--ruta"></i>Ruta</span>
+          <span><i class="lg lg--parada"></i>Parada</span>
+          <span><i class="lg lg--campus"></i>UTP</span>
+          <span id="lgAuto" hidden><i class="lg lg--auto"></i>Auto</span>
+        </div>
+        <span class="vivo-badge" id="liveBadge">Sin señal</span>
+        <p class="vivo-hint" id="mapHint" hidden>El mapa no pudo cargarse. La información del viaje sigue disponible a la derecha.</p>
+      </section>
+
+      <aside class="vivo-side">
+        <section class="panel-card vivo-eta" aria-live="polite">
+          <span class="vivo-label" id="etaLabel">Llegada estimada</span>
+          <p class="vivo-eta__num"><b id="etaNum">—</b><span>min</span></p>
+          <p class="vivo-eta__sub" id="etaDist">Elige un raite para ver el recorrido.</p>
+          <div class="vivo-meta">
+            <span class="pill-s" id="estadoPill">Programado</span>
+            <span class="vivo-update" id="lastUpdate"></span>
+          </div>
+          <p class="vivo-warn" id="etaWarn" hidden></p>
+        </section>
+
+        <section class="panel-card" id="passBox" hidden>
+          <h3>Tu lugar</h3>
+          <div id="miReserva" hidden>
+            <p class="vivo-code">Código <b id="miCodigo"></b></p>
+            <p class="vivo-sub" id="miParada"></p>
+            <div class="vivo-actions">
+              <button class="btn btn--primary btn--sm" id="avisarBtn" type="button">Ya te espero</button>
+              <button class="btn btn--outline btn--sm" id="cancelarBtn" type="button">Cancelar</button>
+            </div>
+          </div>
+          <div id="solicitarBox">
+            <p class="vivo-sub">El conductor acepta solicitudes mientras va en camino. Tu lugar se aparta hasta que la acepte.</p>
+            <label class="field"><span>¿Dónde te subes?</span><select id="paradaSel"></select></label>
+            <button class="btn btn--primary btn--block" id="requestBtn" type="button">Solicitar lugar</button>
+          </div>
+          <p class="vivo-sub" id="passMsg" hidden></p>
+          <button class="btn btn--outline btn--sm vivo-notify" id="notifyBtn" type="button" hidden>Avisarme 3 minutos antes</button>
+        </section>
+
+        <section class="panel-card" id="loginBox" hidden>
+          <h3>Aparta tu lugar</h3>
+          <p class="vivo-sub">Inicia sesión para solicitar un lugar y ver la ubicación del auto.</p>
+          <a class="btn btn--primary btn--block" href="panel.html">Entrar a mi cuenta</a>
+        </section>
+
+        <section class="panel-card" id="driverBox" hidden>
+          <h3>Conduce este raite</h3>
+          <p class="vivo-sub" id="gpsMsg">Comparte tu ubicación solo mientras el viaje está activo. La posición se borra al terminar y solo la ven los participantes.</p>
+          <div class="vivo-actions">
+            <button class="btn btn--primary btn--block" id="startBtn" type="button">Iniciar y compartir ubicación</button>
+            <button class="btn btn--danger btn--block" id="stopBtn" type="button" hidden>Terminar viaje</button>
+          </div>
+          <p class="vivo-gps" id="gpsInfo" hidden></p>
+        </section>
+
+        <section class="panel-card" id="solicitudesBox" hidden>
+          <h3>Solicitudes <span class="vivo-count" id="reqCount">0</span></h3>
+          <div id="reqs" class="vivo-reqs"></div>
+          <p class="vivo-sub" id="reqEmpty">No hay solicitudes pendientes.</p>
+        </section>
+
+        <section class="panel-card vivo-pasos">
+          <h3>Paradas del recorrido</h3>
+          <ol id="pasos" class="vivo-stops"></ol>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/vivo.js"></script>
+</body>
+</html>
