@@ -121,6 +121,8 @@
 }
 @media (max-width: 980px) {
   .vivo-grid { grid-template-columns: minmax(0, 1fr); }
+  #driverBox { order: -2; }
+  #solicitudesBox { order: -1; }
   .vivo-map { height: 440px; }
   .vivo-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .vivo-eta, .vivo-pasos { grid-column: span 2; }
