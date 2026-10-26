@@ -96,7 +96,7 @@ async function listarCaches() {
   log("caches.keys()", "", true, `${nombres.length} caché${nombres.length === 1 ? "" : "s"} en el navegador`);
   if (!nombres.length) {
     caja.innerHTML = `<p class="lab-hint lab-hint--soft">No hay cachés todavía.
-      El service worker crea «rodando-utp-v3» al instalar la app; también puedes crear una con
+      El service worker crea «rodando-utp-v4» al instalar la app; también puedes crear una con
       <code>caches.open()</code> arriba.</p>`;
     return;
   }

@@ -16,6 +16,7 @@ tags:
   - { name: Reservas }
   - { name: Conductores }
   - { name: Push }
+  - { name: En vivo }
 paths:
   /api/health:
     get:
@@ -166,6 +167,139 @@ paths:
         "200": { description: Cancelada }
         "403": { $ref: "#/components/responses/Error" }
         "404": { $ref: "#/components/responses/Error" }
+  /api/vivo/{id}:
+    get:
+      tags: [En vivo]
+      summary: Estado del viaje de hoy, ruta y ETA (la posición solo se muestra a participantes)
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+        - { in: query, name: fecha, schema: { type: string, format: date }, description: Por defecto hoy en Puebla }
+      responses:
+        "200": { description: Estado del viaje, content: { application/json: { schema: { type: object } } } }
+        "404": { $ref: "#/components/responses/Error" }
+  /api/vivo/{id}/iniciar:
+    post:
+      tags: [En vivo]
+      summary: El conductor abre el viaje y empieza a compartir su ubicación
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { fecha: { type: string, format: date } } } } }
+      responses:
+        "201": { description: Viaje iniciado, content: { application/json: { schema: { type: object } } } }
+        "403": { $ref: "#/components/responses/Error" }
+  /api/vivo/{id}/posicion:
+    post:
+      tags: [En vivo]
+      summary: Actualiza la posición del auto (solo conductor)
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lat, lng]
+              properties:
+                lat: { type: number, minimum: -90, maximum: 90 }
+                lng: { type: number, minimum: -180, maximum: 180 }
+                precision: { type: number, description: Metros; se rechaza si supera 30 }
+                velocidad: { type: number, description: Metros por segundo }
+                rumbo: { type: number, minimum: 0, maximum: 360 }
+                fecha: { type: string, format: date }
+      responses:
+        "200": { description: Posición y ETA recalculada, content: { application/json: { schema: { type: object } } } }
+        "400": { $ref: "#/components/responses/Error" }
+  /api/vivo/{id}/estado:
+    patch:
+      tags: [En vivo]
+      summary: Cambia el estado del viaje
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado: { type: string, enum: [en_camino, recogiendo, en_ruta, finalizado] }
+                fecha: { type: string, format: date }
+      responses:
+        "200": { description: Estado actualizado, content: { application/json: { schema: { type: object } } } }
+  /api/vivo/{id}/finalizar:
+    post:
+      tags: [En vivo]
+      summary: Termina el viaje y borra la posición
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { fecha: { type: string, format: date } } } } }
+      responses:
+        "200": { description: Viaje finalizado, content: { application/json: { schema: { type: object } } } }
+  /api/vivo/{id}/solicitar:
+    post:
+      tags: [En vivo]
+      summary: Solicita un lugar en el viaje en curso (queda pendiente de aceptación)
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [parada]
+              properties:
+                parada: { type: string }
+                nombre: { type: string }
+                fecha: { type: string, format: date }
+      responses:
+        "201": { description: Solicitud creada, content: { application/json: { schema: { type: object } } } }
+        "409": { description: Solicitud duplicada o sin cupo, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+  /api/vivo/{id}/solicitudes:
+    get:
+      tags: [En vivo]
+      summary: Solicitudes pendientes con distancia y ETA (solo conductor)
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+        - { in: query, name: fecha, schema: { type: string, format: date } }
+      responses:
+        "200": { description: Lista de solicitudes, content: { application/json: { schema: { type: object } } } }
+  /api/vivo/{id}/solicitudes/{codigo}/aceptar:
+    post:
+      tags: [En vivo]
+      summary: Acepta una solicitud y consume un asiento
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+        - { in: path, name: codigo, required: true, schema: { type: string, example: RU-AB12 } }
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { fecha: { type: string, format: date } } } } }
+      responses:
+        "200": { description: Reserva confirmada, content: { application/json: { schema: { type: object } } } }
+        "409": { description: RAITE_LLENO, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+  /api/vivo/{id}/solicitudes/{codigo}/rechazar:
+    post:
+      tags: [En vivo]
+      summary: Rechaza una solicitud sin consumir asiento
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+        - { in: path, name: codigo, required: true, schema: { type: string, example: RU-AB12 } }
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { fecha: { type: string, format: date } } } } }
+      responses:
+        "200": { description: Solicitud rechazada, content: { application/json: { schema: { type: object } } } }
+  /api/vivo/{id}/avisar:
+    post:
+      tags: [En vivo]
+      summary: El pasajero avisa que ya espera en su parada
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: Aviso enviado al conductor, content: { application/json: { schema: { type: object } } } }
+        "403": { $ref: "#/components/responses/Error" }
   /api/conductores/solicitud:
     post:
       tags: [Conductores]

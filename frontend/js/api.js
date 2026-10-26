@@ -69,6 +69,12 @@ const API = (() => {
   function logout() {
     ls.del(TOKEN_KEY); ls.del(USER_KEY);
     ls.del(CACHE + "/reservas/mias"); // no dejar datos personales en caché compartida
+    try { // tampoco el estado del seguimiento en vivo (incluye reserva y posición)
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(CACHE + "/vivo")) localStorage.removeItem(k);
+      }
+    } catch { /* sin almacenamiento */ }
     dispatchEvent(new CustomEvent("auth-change"));
   }
 
@@ -112,6 +118,16 @@ const API = (() => {
     solicitudConductor: d => request("POST", "/conductores/solicitud", d),
 
     pushKey: () => request("GET", "/push/vapid-public-key"),
-    pushSubscribe: sub => request("POST", "/push/subscribe", sub)
+    pushSubscribe: sub => request("POST", "/push/subscribe", sub),
+
+    vivo: (id, fecha) => request("GET", "/vivo/" + id + qs({ fecha })),
+    vivoIniciar: (id, fecha) => request("POST", `/vivo/${id}/iniciar`, { fecha }),
+    vivoPosicion: (id, d) => request("POST", `/vivo/${id}/posicion`, d),
+    vivoFinalizar: (id, fecha) => request("POST", `/vivo/${id}/finalizar`, { fecha }),
+    vivoSolicitar: (id, d) => request("POST", `/vivo/${id}/solicitar`, d),
+    vivoSolicitudes: (id, fecha) => request("GET", `/vivo/${id}/solicitudes` + qs({ fecha })).then(r => r.solicitudes),
+    vivoResponder: (id, codigo, accion, fecha) =>
+      request("POST", `/vivo/${id}/solicitudes/${encodeURIComponent(codigo)}/${accion}`, { fecha }),
+    vivoAvisar: id => request("POST", `/vivo/${id}/avisar`)
   };
 })();

@@ -7,15 +7,18 @@
    - Notificaciones push: muestra el aviso y abre #rutas.
    (Sube la versión al cambiar archivos.)
    ========================================================= */
-const CACHE = "rodando-utp-v3";
+const CACHE = "rodando-utp-v4";
 const ARCHIVOS = [
   "./",
   "./index.html",
   "./cache.html",
+  "./vivo.html",
   "./css/styles.css",
+  "./css/vivo.css",
   "./js/api.js",
   "./js/app.js",
   "./js/cache.js",
+  "./js/vivo.js",
   "./js/panel.js",
   "./js/admin.js",
   "./admin.html",
@@ -29,11 +32,14 @@ const ARCHIVOS = [
   "./img/conductor.svg",
   "./img/icons/icon-192.png",
   "./img/icons/icon-512.png",
-  "./video/poster.png"
+  "./video/poster.png",
+  "./vendor/leaflet/leaflet.js",
+  "./vendor/leaflet/leaflet.css",
+  "./vendor/leaflet/LICENSE"
 ];
 
 // Endpoints con datos personales o de escritura: nunca se guardan en caché.
-const API_PRIVADA = /^\/api\/(auth|reservas|admin|push)\b/;
+const API_PRIVADA = /^\/api\/(auth|reservas|admin|push|vivo)\b/;
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));
@@ -70,7 +76,7 @@ self.addEventListener("fetch", e => {
   e.respondWith(
     fetch(req, { cache: "no-cache" })
       .then(res => {
-        if (res.ok && (req.url.startsWith(self.location.origin) || req.url.includes("fonts.g"))) {
+        if (res.ok && (req.url.startsWith(self.location.origin) || req.url.includes("fonts.g") || url.hostname.endsWith("tile.openstreetmap.org"))) {
           const copy = res.clone();
           caches.open(CACHE).then(c => c.put(req, copy));
         }

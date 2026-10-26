@@ -13,11 +13,13 @@ import { idParam } from "../schemas/common.js";
 import { registroSchema, loginSchema } from "../schemas/auth.schema.js";
 import { listarRaitesQuery, crearRaiteSchema, editarRaiteSchema } from "../schemas/raites.schema.js";
 import { crearReservaSchema, codigoParam } from "../schemas/reservas.schema.js";
+import { vivoQuery, fechaBody, posicionSchema, estadoViajeSchema, solicitarVivoSchema, solicitudParams } from "../schemas/vivo.schema.js";
 import { calculadoraSchema, solicitudConductorSchema, suscripcionSchema, enviarPushSchema } from "../schemas/otros.schema.js";
 import * as auth from "../controllers/auth.controller.js";
 import * as cat from "../controllers/catalogo.controller.js";
 import * as raites from "../controllers/raites.controller.js";
 import * as reservas from "../controllers/reservas.controller.js";
+import * as vivoCtl from "../controllers/vivo.controller.js";
 import * as cond from "../controllers/conductores.controller.js";
 import * as adminCtl from "../controllers/admin.controller.js";
 import { rolUsuarioSchema } from "../schemas/admin.schema.js";
@@ -52,6 +54,18 @@ r.delete("/raites/:id", requireAuth, validate({ params: idParam }), h(raites.eli
 r.post("/reservas", requireAuth, validate({ body: crearReservaSchema }), h(reservas.crear));
 r.get("/reservas/mias", requireAuth, h(reservas.mias));
 r.delete("/reservas/:codigo", requireAuth, validate({ params: codigoParam }), h(reservas.cancelar));
+
+// Seguimiento en vivo (Subproducto 5). El WebSocket vive en /api/vivo/ws (upgrade).
+r.get("/vivo/:id", optionalAuth, validate({ params: idParam, query: vivoQuery }), h(vivoCtl.estado));
+r.post("/vivo/:id/iniciar", requireAuth, validate({ params: idParam, body: fechaBody }), h(vivoCtl.iniciar));
+r.post("/vivo/:id/posicion", requireAuth, validate({ params: idParam, body: posicionSchema }), h(vivoCtl.posicion));
+r.patch("/vivo/:id/estado", requireAuth, validate({ params: idParam, body: estadoViajeSchema }), h(vivoCtl.cambiarEstado));
+r.post("/vivo/:id/finalizar", requireAuth, validate({ params: idParam, body: fechaBody }), h(vivoCtl.finalizar));
+r.post("/vivo/:id/solicitar", requireAuth, validate({ params: idParam, body: solicitarVivoSchema }), h(vivoCtl.solicitar));
+r.get("/vivo/:id/solicitudes", requireAuth, validate({ params: idParam, query: vivoQuery }), h(vivoCtl.solicitudes));
+r.post("/vivo/:id/solicitudes/:codigo/aceptar", requireAuth, validate({ params: solicitudParams, body: fechaBody }), h(vivoCtl.responder));
+r.post("/vivo/:id/solicitudes/:codigo/rechazar", requireAuth, validate({ params: solicitudParams, body: fechaBody }), h(vivoCtl.rechazar));
+r.post("/vivo/:id/avisar", requireAuth, validate({ params: idParam }), h(vivoCtl.avisar));
 
 r.post("/conductores/solicitud", validate({ body: solicitudConductorSchema }), h(cond.solicitud));
 r.get("/admin/solicitudes", ...requireRole("admin"), h(cond.listar));

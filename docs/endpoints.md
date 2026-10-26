@@ -20,7 +20,16 @@ Error: `{ "error": { "code", "message", "details" } }`.
 | POST | `/reservas` | sesión | `{raiteId, dia, parada, nombre}` → código `RU-XXXX` (409 `RAITE_LLENO`, `RESERVA_DUPLICADA`) |
 | GET | `/reservas/mias` | sesión | Mis lugares apartados |
 | DELETE | `/reservas/:codigo` | dueño/admin | Cancela |
-| POST | `/conductores/solicitud` | público | Formulario «Registro de conductor» |
+| GET | `/vivo/:id` | opcional | Estado del viaje de hoy: ruta, paradas, ETA y posición (solo participantes) |
+| POST | `/vivo/:id/iniciar` | conductor | Abre el viaje del día y empieza a compartir |
+| POST | `/vivo/:id/posicion` | conductor | `{lat, lng, precision, velocidad, rumbo}`; rechaza precisión > 30 m |
+| PATCH | `/vivo/:id/estado` | conductor | `en_camino`, `recogiendo`, `en_ruta` o `finalizado` |
+| POST | `/vivo/:id/finalizar` | conductor | Cierra el viaje y borra la posición |
+| POST | `/vivo/:id/solicitar` | sesión | Solicitud de lugar (queda `pendiente`; 409 `RAITE_LLENO` al aceptar sin cupo) |
+| GET | `/vivo/:id/solicitudes` | conductor | Solicitudes pendientes con distancia y ETA |
+| POST | `/vivo/:id/solicitudes/:codigo/{aceptar\|rechazar}` | conductor | Responde la solicitud |
+| POST | `/vivo/:id/avisar` | sesión | Avisa al conductor que el pasajero ya espera |
+| WS | `/vivo/ws?token=JWT` | sesión | Canal en vivo; mensajes `suscribir`, `suscrito`, `posicion`, `estado`, `solicitudes`, `reserva` |
 | GET | `/admin/solicitudes` | admin | Lista solicitudes (`?estado=`) |
 | POST | `/admin/solicitudes/:id/aprobar` | admin | Aprueba; si hay cuenta con ese correo, la hace conductor y publica su raite |
 | GET | `/admin/resumen` | admin | Conteos por tabla (tarjetas del panel) |
@@ -49,3 +58,5 @@ TOKEN=$(curl -s -X POST localhost:3000/api/auth/login -H 'Content-Type: applicat
 curl -s -X POST localhost:3000/api/raites -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
   -d '{"zona":"cholula","tipo":"ida","hora":"07:15","dias":[0,1,2],"asientos":3,"aportacion":40,"paradas":["Zócalo de Cholula"]}'
 ```
+
+El WebSocket valida que el usuario sea conductor o participante del viaje; al cancelar o rechazar la reserva, el servidor lo saca de la sala. Las rutas de `/vivo` aceptan `fecha=AAAA-MM-DD` (por defecto hoy en Puebla).

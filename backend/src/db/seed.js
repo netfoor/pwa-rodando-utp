@@ -15,9 +15,11 @@ export async function seed() {
   await withTransaction(async db => {
     for (const [i, z] of ZONAS.entries()) {
       await db.query(
-        `INSERT INTO zonas (id, nombre, km, x, y, color, trazo_svg, orden) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-         ON CONFLICT (id) DO UPDATE SET nombre=$2, km=$3, x=$4, y=$5, color=$6, trazo_svg=$7, orden=$8`,
-        [z.id, z.nombre, z.km, z.x, z.y, z.color, z.trazo, i]
+        `INSERT INTO zonas (id, nombre, km, x, y, color, trazo_svg, orden, lat, lng, trazo)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+         ON CONFLICT (id) DO UPDATE SET nombre=$2, km=$3, x=$4, y=$5, color=$6, trazo_svg=$7, orden=$8,
+           lat=$9, lng=$10, trazo=$11`,
+        [z.id, z.nombre, z.km, z.x, z.y, z.color, z.trazo, i, z.lat, z.lng, JSON.stringify(z.ruta)]
       );
     }
 
