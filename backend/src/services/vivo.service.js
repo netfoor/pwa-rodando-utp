@@ -338,9 +338,9 @@ export async function responderSolicitud(user, raiteId, codigo, accion, fecha = 
 }
 
 /** Aviso del pasajero al conductor (ya está en el punto de encuentro). */
-export async function avisar(user, raiteId) {
+export async function avisar(user, raiteId, fecha = fechaMx()) {
   const r = await cargarRaite(raiteId);
-  const fecha = fechaMx(), dia = diaDeFecha(fecha);
+  const dia = diaDeFecha(fecha);
   const mia = await query(
     `SELECT parada FROM reservas WHERE raite_id=$1 AND user_id=$2 AND dia=$3 AND estado='confirmada'`,
     [raiteId, user.id, dia]);

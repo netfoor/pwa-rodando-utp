@@ -62,4 +62,4 @@ export const rechazar = async (req, res) => {
 };
 
 export const avisar = async (req, res) =>
-  res.json(await vivo.avisar(req.user, req.validated.params.id));
+  res.json(await vivo.avisar(req.user, req.validated.params.id, req.validated.body?.fecha));
