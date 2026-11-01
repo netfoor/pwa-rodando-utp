@@ -367,7 +367,8 @@ CONTENIDO = [
     ("p", "La prueba de entrega real se hizo con las llaves configuradas en el proceso del servidor. La respuesta "
           "de la API fue «1 de 1 envíos aceptados» y la página registró el push en el mismo instante. Esa "
           "distinción importa: el 503 es el comportamiento esperado cuando falta configuración, no un error del "
-          "ejemplo. En producción, la función queda activa en cuanto se definen las variables de entorno."),
+          "ejemplo. La misma secuencia se repitió en la URL publicada después de configurar las variables de "
+          "entorno, con el mismo resultado."),
 
     ("h2", "8.5 Configuración y seguridad"),
     ("p", "Las llaves se generan una vez y se guardan como variables de entorno del servidor: VAPID_PUBLIC_KEY, "
@@ -379,9 +380,10 @@ CONTENIDO = [
           "la suscripción se elimina; así la base no conserva endpoints muertos. El service worker, por su parte, "
           "no cachea las rutas de push ni las respuestas con datos personales, y el mensaje que reenvía a las "
           "pestañas solo contiene título, texto y URL."),
-    ("p", "Queda una tarea de operación: configurar las llaves en el entorno publicado. Sin ellas, la página "
-          "explica que el servidor no está configurado y no intenta simular una entrega. Esa degradación es "
-          "deliberada: es preferible un mensaje claro a un botón que parece funcionar y no envía nada."),
+    ("p", "Las llaves quedaron configuradas en el entorno publicado y la ruta responde con la llave pública. Si "
+          "el servicio se recrea sin esas variables, la página explica que el servidor no está configurado y no "
+          "intenta simular una entrega. Esa degradación es deliberada: es preferible un mensaje claro a un botón "
+          "que parece funcionar y no envía nada."),
 
     ("h1", "9. Conclusiones"),
     ("p", "Las notificaciones push cubren el intervalo en el que la aplicación deja de mirarse pero el viaje sigue "
