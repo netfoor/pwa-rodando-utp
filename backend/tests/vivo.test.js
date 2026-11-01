@@ -138,7 +138,7 @@ describe("seguimiento en vivo", () => {
     expect(fin.avance).toBeGreaterThan(inicio.avance);
     expect(fin.vigente).toBe(true);
 
-    const aviso = await api().post(`/api/vivo/${raite.id}/avisar`).set(p.auth);
+    const aviso = await api().post(`/api/vivo/${raite.id}/avisar`).set(p.auth).send({ fecha: FECHA });
     expect(aviso.status).toBe(200);
 
     const f = await api().post(`/api/vivo/${raite.id}/finalizar`).set(cond.auth).send({ fecha: FECHA });
