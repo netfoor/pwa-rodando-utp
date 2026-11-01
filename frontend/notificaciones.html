@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notificaciones push · Rodando UTP</title>
+  <meta name="theme-color" content="#1E1B4B">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/notificaciones.css">
+</head>
+<body class="panel-page push-page">
+  <header class="header scrolled">
+    <div class="container header__inner">
+      <a href="index.html" class="brand" aria-label="Volver al inicio">
+        <img src="img/logo.svg" alt="Logo de Rodando UTP" class="brand__logo" width="48" height="48">
+        <span class="brand__text"><span class="brand__name">Rodando <b>UTP</b></span><span class="brand__slogan">Notificaciones push</span></span>
+      </a>
+      <div class="header__actions">
+        <span id="who" class="who" hidden></span>
+        <button class="btn btn--sm btn--outline" id="logoutBtn" hidden>Cerrar sesión</button>
+        <a class="btn btn--sm btn--primary" href="index.html">← Inicio</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container panel">
+    <div class="panel-head push-head">
+      <div>
+        <span class="eyebrow">Laboratorio push</span>
+        <h2>Avisos que llegan a tiempo</h2>
+        <p class="push-intro">Esta página demuestra el ciclo completo de una notificación push en la PWA: permiso del navegador, suscripción, envío desde el servidor y aviso mostrado por el service worker.</p>
+      </div>
+      <span class="pill-s" id="soportePill">Comprobando…</span>
+    </div>
+
+    <div class="push-grid">
+      <div class="push-col">
+        <section class="panel-card">
+          <div class="push-card-head">
+            <span class="push-step">1</span>
+            <div><h3>Permiso y suscripción</h3><p class="push-sub">El navegador entrega un endpoint único y dos llaves para cifrar el contenido.</p></div>
+          </div>
+          <dl class="push-estado">
+            <div><dt>Soporte</dt><dd id="stSoporte">—</dd></div>
+            <div><dt>Permiso</dt><dd id="stPermiso">—</dd></div>
+            <div><dt>Suscripción</dt><dd id="stSub">—</dd></div>
+            <div><dt>Service worker</dt><dd id="stSw">—</dd></div>
+          </dl>
+          <div class="push-actions">
+            <button class="btn btn--primary" id="activarBtn" type="button">Activar notificaciones</button>
+            <button class="btn btn--outline" id="desactivarBtn" type="button" hidden>Desactivar</button>
+          </div>
+          <p class="push-msg" id="subMsg" hidden></p>
+        </section>
+
+        <section class="panel-card" id="loginBox" hidden>
+          <div class="push-card-head">
+            <span class="push-step">2</span>
+            <div><h3>Inicia sesión</h3><p class="push-sub">La prueba se envía solo a las suscripciones de tu cuenta.</p></div>
+          </div>
+          <form id="loginForm" novalidate>
+            <label class="field"><span>Correo institucional</span><input type="email" id="lCorreo" placeholder="matricula@utpuebla.edu.mx" autocomplete="email"></label>
+            <label class="field"><span>Contraseña</span><input type="password" id="lPass" autocomplete="current-password"></label>
+            <small class="err" id="lError"></small>
+            <button class="btn btn--primary btn--block" type="submit">Entrar</button>
+          </form>
+          <p class="push-sub push-sub--demo">Cuenta de prueba: <code>mariana.lopez@utpuebla.edu.mx</code> / <code>Demo1234!</code></p>
+        </section>
+
+        <section class="panel-card" id="envioBox" hidden>
+          <div class="push-card-head">
+            <span class="push-step">2</span>
+            <div><h3>Envía un aviso de prueba</h3><p class="push-sub">El servidor firma el mensaje con VAPID y lo entrega al servicio push del navegador.</p></div>
+          </div>
+          <button class="btn btn--primary btn--block" id="enviarBtn" type="button">Enviar notificación de prueba</button>
+          <p class="push-msg" id="envioMsg" hidden></p>
+        </section>
+
+        <section class="panel-card">
+          <div class="push-card-head">
+            <span class="push-step">3</span>
+            <div><h3>Bitácora del recorrido</h3><p class="push-sub">Cada paso del ciclo queda registrado con su hora.</p></div>
+          </div>
+          <ol class="push-log" id="bitacora" aria-live="polite">
+            <li class="push-log__empty" id="logEmpty">Aún no hay eventos. Activa las notificaciones para comenzar.</li>
+          </ol>
+        </section>
+      </div>
+
+      <aside class="push-col">
+        <section class="panel-card push-recibo">
+          <span class="push-label">Última notificación recibida</span>
+          <div class="push-notif" id="ultimaNotif">
+            <span class="push-notif__icon" aria-hidden="true">🔔</span>
+            <div>
+              <b id="ultimaTitulo">Todavía no llega ninguna</b>
+              <p id="ultimaTexto">Cuando el aviso llegue, aparecerá aquí y en la bandeja del sistema.</p>
+            </div>
+          </div>
+          <p class="push-sub" id="ultimaHora"></p>
+        </section>
+
+        <section class="panel-card">
+          <h3>¿Qué hay detrás?</h3>
+          <ol class="push-tech">
+            <li><b>Notifications API</b><span>Pide permiso y define cómo se muestra el aviso.</span></li>
+            <li><b>Push API + service worker</b><span>Recibe el mensaje aunque la pestaña esté cerrada.</span></li>
+            <li><b>VAPID + cifrado</b><span>Identifica al servidor y protege el contenido en tránsito.</span></li>
+            <li><b>Servidor Node</b><span>Guarda la suscripción y envía con la librería web-push.</span></li>
+          </ol>
+        </section>
+
+        <section class="panel-card">
+          <h3>¿Para qué sirven?</h3>
+          <ul class="push-usos">
+            <li>Confirmar una reservación o un cambio de horario.</li>
+            <li>Avisar que el conductor va en camino.</li>
+            <li>Recordar un raite minutos antes de la salida.</li>
+            <li>Informar cancelaciones sin abrir la aplicación.</li>
+          </ul>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <script src="js/api.js"></script>
+  <script src="js/notificaciones.js"></script>
+</body>
+</html>

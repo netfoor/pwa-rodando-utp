@@ -835,7 +835,12 @@ updateOnline();
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
   // Al tocar una notificación el service worker pide abrir una sección
-  navigator.serviceWorker.addEventListener("message", e => { if (e.data?.irA) location.hash = e.data.irA; });
+  navigator.serviceWorker.addEventListener("message", e => {
+    const irA = e.data?.irA;
+    if (!irA) return;
+    if (irA.startsWith("/#")) location.hash = irA.slice(1);
+    else location.href = irA;
+  });
 }
 
 /* ---------------- Inicio ---------------- */

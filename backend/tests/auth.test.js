@@ -74,6 +74,14 @@ describe("push", () => {
     expect(res.body.error.code).toBe("PUSH_NO_CONFIGURADO");
   });
 
+  it("la notificación de prueba exige sesión y llaves VAPID", async () => {
+    expect((await api().post("/api/push/prueba")).status).toBe(401);
+    const u = await nuevoUsuario();
+    const res = await api().post("/api/push/prueba").set(u.auth);
+    expect(res.status).toBe(503);
+    expect(res.body.error.code).toBe("PUSH_NO_CONFIGURADO");
+  });
+
   it("guarda suscripciones y exige admin para enviar", async () => {
     const sub = { endpoint: "https://push.example.com/abc" + Date.now(), keys: { p256dh: "k", auth: "a" } };
     expect((await api().post("/api/push/subscribe").send(sub)).status).toBe(201);

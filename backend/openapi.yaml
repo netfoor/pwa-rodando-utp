@@ -416,6 +416,15 @@ paths:
                 keys: { type: object, required: [p256dh, auth], properties: { p256dh: { type: string }, auth: { type: string } } }
       responses:
         "201": { description: Suscrito }
+  /api/push/prueba:
+    post:
+      tags: [Push]
+      summary: Enviar una notificación de prueba al propio usuario
+      security: [{ bearer: [] }]
+      responses:
+        "200": { description: Envíos realizados y suscripciones registradas }
+        "401": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
   /api/push/send:
     post:
       tags: [Push]

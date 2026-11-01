@@ -4,21 +4,25 @@
    nuevo, pero funciona sin internet.
    - /api/*: red primero; si falla, la última copia guardada
      (solo peticiones GET públicas; la sesión nunca se cachea).
-   - Notificaciones push: muestra el aviso y abre #rutas.
+   - Notificaciones push: muestra el aviso, avisa a las pestañas
+    abiertas y abre la URL indicada por el servidor.
    (Sube la versión al cambiar archivos.)
    ========================================================= */
-const CACHE = "rodando-utp-v4";
+const CACHE = "rodando-utp-v5";
 const ARCHIVOS = [
   "./",
   "./index.html",
   "./cache.html",
   "./vivo.html",
+  "./notificaciones.html",
   "./css/styles.css",
   "./css/vivo.css",
+  "./css/notificaciones.css",
   "./js/api.js",
   "./js/app.js",
   "./js/cache.js",
   "./js/vivo.js",
+  "./js/notificaciones.js",
   "./js/panel.js",
   "./js/admin.js",
   "./admin.html",
@@ -90,21 +94,27 @@ self.addEventListener("fetch", e => {
 self.addEventListener("push", e => {
   let datos = { titulo: "Rodando UTP", mensaje: "Tienes una novedad en tus raites.", url: "/#rutas" };
   try { datos = { ...datos, ...e.data.json() }; } catch { /* payload vacío o de texto */ }
-  e.waitUntil(self.registration.showNotification(datos.titulo, {
-    body: datos.mensaje,
-    icon: "./img/icons/icon-192.png",
-    badge: "./img/icons/icon-192.png",
-    data: { url: datos.url }
-  }));
+  e.waitUntil((async () => {
+    await self.registration.showNotification(datos.titulo, {
+      body: datos.mensaje,
+      icon: "./img/icons/icon-192.png",
+      badge: "./img/icons/icon-192.png",
+      data: { url: datos.url }
+    });
+    // Las pestañas abiertas reflejan el aviso sin esperar a que se toque.
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    wins.forEach(w => w.postMessage({ tipo: "push-recibido", ...datos }));
+  })());
 });
 
 self.addEventListener("notificationclick", e => {
   e.notification.close();
+  const destino = new URL(e.notification.data?.url || "./index.html#rutas", self.location.origin);
   e.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(wins => {
       const abierta = wins.find(w => "focus" in w);
-      if (abierta) { abierta.postMessage({ irA: "#rutas" }); return abierta.focus(); }
-      return self.clients.openWindow("./index.html#rutas");
+      if (abierta) { abierta.postMessage({ irA: destino.pathname + destino.hash }); return abierta.focus(); }
+      return self.clients.openWindow(destino.href);
     })
   );
 });

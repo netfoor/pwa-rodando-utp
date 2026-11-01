@@ -23,6 +23,18 @@ export async function suscribir(userId, { endpoint, keys }) {
     [userId ?? null, endpoint, keys.p256dh, keys.auth]);
 }
 
+/** Envía una notificación de prueba a las suscripciones del propio usuario. */
+export async function enviarPrueba(userId) {
+  if (!pushActivo) throw new AppError(503, "PUSH_NO_CONFIGURADO", "Las notificaciones push no están configuradas");
+  const { rows } = await query("SELECT count(*)::int AS total FROM push_subscriptions WHERE user_id = $1", [userId]);
+  const enviados = await enviar({
+    titulo: "Rodando UTP",
+    mensaje: "¡Funciona! Así se verán los avisos de tus raites.",
+    url: "/notificaciones.html"
+  }, userId);
+  return { enviados, total: rows[0].total };
+}
+
 /**
  * Envía una notificación a las suscripciones de un usuario (o a todas si no se indica).
  * Elimina las suscripciones caducadas (404/410). @returns {Promise<number>} envíos exitosos
