@@ -119,6 +119,7 @@ const API = (() => {
 
     pushKey: () => request("GET", "/push/vapid-public-key"),
     pushSubscribe: sub => request("POST", "/push/subscribe", sub),
+    pushPrueba: () => request("POST", "/push/prueba"),
 
     vivo: (id, fecha) => request("GET", "/vivo/" + id + qs({ fecha })),
     vivoIniciar: (id, fecha) => request("POST", `/vivo/${id}/iniciar`, { fecha }),

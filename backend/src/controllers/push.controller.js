@@ -8,6 +8,9 @@ export const suscribir = async (req, res) => {
   await push.suscribir(req.user?.id, req.validated.body);
   res.status(201).json({ ok: true });
 };
+export const prueba = async (req, res) => {
+  res.json(await push.enviarPrueba(req.user.id));
+};
 export const enviar = async (req, res) => {
   const { userId, ...payload } = req.validated.body;
   res.json({ enviados: await push.enviar(payload, userId) });

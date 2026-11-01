@@ -65,7 +65,7 @@ r.post("/vivo/:id/solicitar", requireAuth, validate({ params: idParam, body: sol
 r.get("/vivo/:id/solicitudes", requireAuth, validate({ params: idParam, query: vivoQuery }), h(vivoCtl.solicitudes));
 r.post("/vivo/:id/solicitudes/:codigo/aceptar", requireAuth, validate({ params: solicitudParams, body: fechaBody }), h(vivoCtl.responder));
 r.post("/vivo/:id/solicitudes/:codigo/rechazar", requireAuth, validate({ params: solicitudParams, body: fechaBody }), h(vivoCtl.rechazar));
-r.post("/vivo/:id/avisar", requireAuth, validate({ params: idParam }), h(vivoCtl.avisar));
+r.post("/vivo/:id/avisar", requireAuth, validate({ params: idParam, body: fechaBody }), h(vivoCtl.avisar));
 
 r.post("/conductores/solicitud", validate({ body: solicitudConductorSchema }), h(cond.solicitud));
 r.get("/admin/solicitudes", ...requireRole("admin"), h(cond.listar));
@@ -95,6 +95,7 @@ r.get("/cache/stats", (req, res) => res.json(estadisticas()));
 r.delete("/cache", ...requireRole("admin"), (req, res) => { limpiar(); res.json({ ok: true, ...estadisticas() }); });
 
 r.get("/push/vapid-public-key", h(push.llavePublica));
+r.post("/push/prueba", requireAuth, h(push.prueba));
 r.post("/push/subscribe", optionalAuth, validate({ body: suscripcionSchema }), h(push.suscribir));
 r.post("/push/send", ...requireRole("admin"), validate({ body: enviarPushSchema }), h(push.enviar));
 

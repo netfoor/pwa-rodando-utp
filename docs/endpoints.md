@@ -45,6 +45,7 @@ Error: `{ "error": { "code", "message", "details" } }`.
 | POST | `/calculadora` | público | `{rol, km, dias, pasajeros, rendimiento, precio}` → ahorros, CO₂, litros, barras |
 | GET | `/push/vapid-public-key` | público | Llave VAPID (503 si no está configurada) |
 | POST | `/push/subscribe` | opcional | Guarda la suscripción push |
+| POST | `/push/prueba` | sesión | Envía un aviso de prueba a las suscripciones del usuario |
 | POST | `/push/send` | admin | `{titulo, mensaje, userId?}` |
 
 ## Ejemplos
