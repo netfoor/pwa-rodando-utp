@@ -166,3 +166,7 @@ Notas: el plan free duerme el servicio tras ~15 min sin tráfico (la primera vis
 ## Créditos
 
 Proyecto académico · Aplicaciones Web Progresivas · Universidad Tecnológica de Puebla.
+
+## Licencia
+
+MIT. Consulta el archivo `LICENSE`.
