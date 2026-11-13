@@ -151,7 +151,7 @@ Cubren health, zonas, raites con filtros y CRUD, registro/login, reservas (inclu
 1. Sube este repositorio a GitHub.
 2. En [Render](https://render.com): **New → Blueprint**, elige el repositorio y confirma. Render lee `render.yaml` y crea el Web Service Docker `rodando-utp` y la base `rodando-db`.
 3. `DATABASE_URL` se enlaza sola y `JWT_SECRET` se genera. Opcional: llena `VAPID_PUBLIC_KEY` y `VAPID_PRIVATE_KEY` para activar push, y `ALLOWED_ORIGINS` solo si el frontend vive en otro dominio.
-4. Espera el primer despliegue. Las migraciones y el seed corren al arrancar. La URL queda como `https://rodando-utp.onrender.com`.
+4. Espera el primer despliegue. Las migraciones y el seed corren al arrancar. La URL queda como `https://rodando-utp-<sufijo>.onrender.com`: Render agrega un sufijo cuando el nombre `rodando-utp` ya lo usa otro servicio (en este caso, `rodando-utp-m12i`).
 5. Logs: servicio → pestaña **Logs**. Estado: `/api/health`.
 
 Notas: el plan free duerme el servicio tras ~15 min sin tráfico (la primera visita tarda en despertar) y la base free de Render caduca a los 30 días. En producción la conexión a Postgres usa SSL (`rejectUnauthorized: false`).
