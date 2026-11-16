@@ -43,6 +43,8 @@ describe("seguimiento en vivo", () => {
     expect(res.body.estadoViaje).toBe("programado");
     expect(res.body.posicion).toBeNull();
     expect(res.body.puedeVer).toBe(false);
+    expect(res.body.participantes).toBeUndefined();
+    expect(res.body.solicitudesPendientes).toBeUndefined();
     expect(res.body.ruta.length).toBeGreaterThan(3);
     expect(res.body.origen).toHaveLength(2);
     expect(res.body.campus[0]).toBeCloseTo(19.0584, 3);
@@ -83,6 +85,9 @@ describe("seguimiento en vivo", () => {
     expect(suya.body.posicion.etaMin).toBeGreaterThan(0);
     expect(suya.body.miReserva).toMatchObject({ estado: "pendiente", parada: "Zócalo" });
     expect(suya.body.puedeVer).toBe(true);
+    expect(suya.body.participantes).toBe(0);
+    expect(suya.body.solicitudesPendientes).toBe(1);
+    expect((await ver(raite.id, cond)).body.solicitudesPendientes).toBe(1);
   });
 
   it("solicitar dos veces, aceptar, rechazar y quedarse sin cupo", async () => {

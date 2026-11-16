@@ -167,7 +167,7 @@ export async function estado(user, raiteId, { fecha } = {}) {
   const posicion = participa ? calcular(r, viaje, user, fraccion) : null;
   const destino = puntoEn(r.ruta, medir(r.ruta).acum, medir(r.ruta).total * (fraccion ?? 1));
 
-  return {
+  const respuesta = {
     raite: {
       ...resumen(r),
       libres: Math.max(r.asientos - gente.filter(g => g.estado === "confirmada").length, 0),
@@ -186,10 +186,14 @@ export async function estado(user, raiteId, { fecha } = {}) {
     miReserva: mia ? { codigo: mia.codigo, estado: mia.estado, parada: mia.parada } : null,
     esConductor,
     puedeVer: participa,
-    posicion,
-    participantes: gente.filter(g => g.estado === "confirmada").length,
-    solicitudesPendientes: gente.filter(g => g.estado === "pendiente").length
+    posicion
   };
+  // Los conteos del viaje solo se revelan a quien ya participa en él.
+  if (participa) {
+    respuesta.participantes = gente.filter(g => g.estado === "confirmada").length;
+    respuesta.solicitudesPendientes = gente.filter(g => g.estado === "pendiente").length;
+  }
+  return respuesta;
 }
 
 /** El conductor inicia (o retoma) el seguimiento del viaje de hoy. */
