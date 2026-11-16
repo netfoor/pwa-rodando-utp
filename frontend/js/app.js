@@ -803,20 +803,50 @@ function toast(msg) {
 
 /* ---------------- PWA: instalación y modo offline ---------------- */
 let deferredPrompt = null;
+const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const esMovil = esIOS || /android/i.test(navigator.userAgent) || matchMedia("(max-width: 760px)").matches;
+const yaInstalada = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
+function mostrarInstalar() {
+  if (!yaInstalada() && (deferredPrompt || esMovil)) $("#installBtn").hidden = false;
+}
+
+function instruccionesInstalar() {
+  openModal(`
+    <h3 id="modalTitle">Instala Rodando UTP</h3>
+    ${esIOS ? `
+      <p>Abre esta página en <b>Safari</b> y sigue estos pasos:</p>
+      <ol>
+        <li>Toca el botón <b>Compartir</b> (el cuadro con la flecha hacia arriba).</li>
+        <li>Elige <b>Agregar a inicio</b>.</li>
+        <li>Confirma con <b>Agregar</b>.</li>
+      </ol>
+    ` : `
+      <p>Abre el menú <b>⋮</b> de Chrome y elige <b>Instalar aplicación</b> o <b>Agregar a pantalla principal</b>.</p>
+    `}
+    <p class="modal__hint">Así podrás abrir Rodando UTP como una app y consultar lo guardado sin conexión.</p>
+  `);
+}
+
 addEventListener("beforeinstallprompt", e => {
   e.preventDefault();
   deferredPrompt = e;
-  $("#installBtn").hidden = false;
+  mostrarInstalar();
 });
 $("#installBtn").addEventListener("click", async () => {
-  if (!deferredPrompt) return;
+  if (!deferredPrompt) return instruccionesInstalar();
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === "accepted") toast("📲 ¡Rodando UTP instalada!");
   deferredPrompt = null;
-  $("#installBtn").hidden = true;
+  if (outcome === "accepted") {
+    toast("📲 ¡Rodando UTP instalada!");
+    $("#installBtn").hidden = true;
+  } else {
+    mostrarInstalar();
+  }
 });
 addEventListener("appinstalled", () => { $("#installBtn").hidden = true; });
+mostrarInstalar();
 
 // La barra aparece sin internet o cuando se muestran datos guardados porque la API no responde
 const MSG_OFFLINE = "Sin conexión · estás usando la versión guardada de Rodando UTP";
@@ -832,8 +862,36 @@ addEventListener("offline", updateOnline);
 addEventListener("api-status", updateOnline);
 updateOnline();
 
+function avisarNuevaVersion(reg) {
+  if ($("#swUpdate")) return;
+  const bar = document.createElement("div");
+  bar.id = "swUpdate";
+  bar.className = "sw-update";
+  bar.innerHTML = '<span>Nueva versión disponible</span><button class="btn btn--sm btn--primary" type="button">Actualizar</button>';
+  bar.querySelector("button").addEventListener("click", () => {
+    if (reg.waiting) reg.waiting.postMessage({ tipo: "SKIP_WAITING" });
+    else location.reload();
+  });
+  document.body.append(bar);
+}
+
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
-  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  let recargando = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (recargando) return;
+    recargando = true;
+    location.reload();
+  });
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").then(reg => {
+    if (reg.waiting && navigator.serviceWorker.controller) avisarNuevaVersion(reg);
+    reg.addEventListener("updatefound", () => {
+      const nuevo = reg.installing;
+      nuevo?.addEventListener("statechange", () => {
+        if (nuevo.state === "installed" && navigator.serviceWorker.controller) avisarNuevaVersion(reg);
+      });
+    });
+    reg.update().catch(() => {});
+  }).catch(() => {}));
   // Al tocar una notificación el service worker pide abrir una sección
   navigator.serviceWorker.addEventListener("message", e => {
     const irA = e.data?.irA;

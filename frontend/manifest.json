@@ -3,23 +3,104 @@
   "short_name": "Rodando UTP",
   "description": "Comparte raite con estudiantes de la UTP: rutas, horarios y calculadora de ahorro en gasolina.",
   "lang": "es-MX",
+  "id": "./",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#1E1B4B",
   "theme_color": "#1E1B4B",
-  "categories": ["travel", "education", "lifestyle"],
+  "categories": [
+    "travel",
+    "education",
+    "lifestyle"
+  ],
   "icons": [
-    { "src": "img/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "img/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "img/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "img/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "Buscar raite", "url": "./index.html#rutas", "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Calculadora de ahorro", "url": "./index.html#calculadora", "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Seguimiento en vivo", "url": "./vivo.html", "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Laboratorio de caché", "url": "./cache.html", "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Notificaciones push", "url": "./notificaciones.html", "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }] }
+    {
+      "name": "Buscar raite",
+      "url": "./index.html#rutas",
+      "icons": [
+        {
+          "src": "img/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Calculadora de ahorro",
+      "url": "./index.html#calculadora",
+      "icons": [
+        {
+          "src": "img/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Seguimiento en vivo",
+      "url": "./vivo.html",
+      "icons": [
+        {
+          "src": "img/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Laboratorio de caché",
+      "url": "./cache.html",
+      "icons": [
+        {
+          "src": "img/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Notificaciones push",
+      "url": "./notificaciones.html",
+      "icons": [
+        {
+          "src": "img/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "img/screenshots/app-narrow.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Raites disponibles y seguimiento en vivo"
+    },
+    {
+      "src": "img/screenshots/app-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Rodando UTP en escritorio"
+    }
   ]
 }

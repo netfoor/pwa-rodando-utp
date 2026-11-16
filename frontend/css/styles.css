@@ -490,6 +490,9 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
 .success__icon { width: 84px; height: 84px; margin: 6px auto 14px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; color: #fff; font-size: 2.6rem; animation: rise .5s cubic-bezier(.2, .9, .3, 1.4); }
 .success code { display: inline-block; font-size: 1.6rem; font-weight: 900; font-family: var(--font-display); letter-spacing: .1em; background: var(--bg-alt); padding: 8px 18px; border-radius: 12px; margin: 6px 0 16px; }
 
+.sw-update { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 500; display: flex; align-items: center; gap: 12px; width: min(420px, calc(100% - 28px)); padding: 10px 12px 10px 16px; border-radius: 14px; background: var(--navy); color: #fff; box-shadow: var(--shadow-lg); font-weight: 600; }
+.sw-update .btn { margin-left: auto; }
+.modal__hint { color: var(--muted); font-size: .9rem; }
 .toasts { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 400; display: grid; gap: 8px; width: min(420px, 100% - 32px); }
 .toast { background: var(--navy); color: #fff; padding: 14px 18px; border-radius: 14px; box-shadow: var(--shadow-lg); font-weight: 600; display: flex; gap: 10px; align-items: center; animation: rise .35s; }
 [data-theme="dark"] .toast { background: #fff; color: var(--navy); }
@@ -524,7 +527,8 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
   .brand__logo { width: 40px; height: 40px; }
   .brand__name { font-size: 1.15rem; }
   .brand__slogan { display: none; }
-  .install-btn { display: none; }
+  .install-btn { padding: 8px 10px; font-size: .78rem; }
+  .install-btn svg { width: 14px; height: 14px; }
   .hero { padding-top: 28px; }
   .search { grid-template-columns: 1fr; border-radius: 20px; }
   .search__field + .search__field { border-left: 0; border-top: 1px solid var(--line); padding-top: 10px; }

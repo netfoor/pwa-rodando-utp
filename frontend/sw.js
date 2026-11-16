@@ -8,7 +8,7 @@
     abiertas y abre la URL indicada por el servidor.
    (Sube la versión al cambiar archivos.)
    ========================================================= */
-const CACHE = "rodando-utp-v5";
+const CACHE = "rodando-utp-v6";
 const ARCHIVOS = [
   "./",
   "./index.html",
@@ -36,6 +36,7 @@ const ARCHIVOS = [
   "./img/conductor.svg",
   "./img/icons/icon-192.png",
   "./img/icons/icon-512.png",
+  "./img/icons/apple-touch-icon-180.png",
   "./video/poster.png",
   "./vendor/leaflet/leaflet.js",
   "./vendor/leaflet/leaflet.css",
@@ -46,7 +47,12 @@ const ARCHIVOS = [
 const API_PRIVADA = /^\/api\/(auth|reservas|admin|push|vivo)\b/;
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));
+  // Sin skipWaiting: la versión nueva espera a que la persona confirme el aviso.
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)));
+});
+
+self.addEventListener("message", e => {
+  if (e.data?.tipo === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("activate", e => {
