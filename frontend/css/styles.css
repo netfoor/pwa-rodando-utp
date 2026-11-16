@@ -107,6 +107,9 @@ b, strong { font-weight: 700; }
   transform: translateY(-100%); transition: transform .3s;
 }
 .offline-bar.show { transform: none; }
+/* Con la barra visible, el encabezado baja para no quedar tapado */
+body:has(.offline-bar.show) { padding-top: 32px; }
+body:has(.offline-bar.show) .header { top: 32px; }
 
 /* ---------- 1. ENCABEZADO ---------- */
 .header {
@@ -131,7 +134,7 @@ b, strong { font-weight: 700; }
 .nav { margin-left: auto; }
 .nav__list { list-style: none; display: flex; gap: 2px; margin: 0; padding: 0; }
 .nav__link {
-  display: block; padding: 8px 10px; border-radius: 999px; text-decoration: none;
+  display: block; white-space: nowrap; padding: 8px 10px; border-radius: 999px; text-decoration: none;
   font-weight: 600; font-size: .92rem; color: var(--ink-2); transition: background .2s, color .2s;
 }
 .nav__link:hover { background: var(--bg-alt); color: var(--ink); }
@@ -502,6 +505,11 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
 .reveal.visible { opacity: 1; transform: none; }
 
 /* ---------- Responsive ---------- */
+/* Escritorio estrecho: el menú completo no cabe junto al texto del botón de instalar */
+@media (min-width: 1181px) and (max-width: 1560px) {
+  .install-btn { padding: 8px 11px; }
+  .install-btn__txt { display: none; }
+}
 @media (max-width: 1180px) {
   .nav {
     position: fixed; top: var(--header-h); left: 0; right: 0; background: var(--surface); border-bottom: 1px solid var(--line);
@@ -527,8 +535,13 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
   .brand__logo { width: 40px; height: 40px; }
   .brand__name { font-size: 1.15rem; }
   .brand__slogan { display: none; }
-  .install-btn { padding: 8px 10px; font-size: .78rem; }
-  .install-btn svg { width: 14px; height: 14px; }
+  .install-btn { padding: 8px 11px; }
+  .install-btn__txt { display: none; }
+  .header__inner { gap: 10px; }
+  .header__actions { gap: 6px; }
+  /* Los adornos del video no deben salirse del margen lateral */
+  .video-frame::before { inset: -8px -6px auto auto; width: 70px; height: 70px; }
+  .video-frame::after { inset: auto auto -10px -6px; }
   .hero { padding-top: 28px; }
   .search { grid-template-columns: 1fr; border-radius: 20px; }
   .search__field + .search__field { border-left: 0; border-top: 1px solid var(--line); padding-top: 10px; }
@@ -661,7 +674,12 @@ textarea { width: 100%; font: inherit; padding: 12px 14px; border-radius: var(--
 .lab-log__a { color: #D0CCEE; word-break: break-all; font-size: .78rem; }
 .lab-log__r { justify-self: end; white-space: nowrap; }
 .lab-log__row--err .lab-log__r { color: #FDA4AF; }
-.lab-cheatsheet .ticks li { align-items: flex-start; font-weight: 500; }
+.lab-cheatsheet .ticks li { display: block; position: relative; padding-left: 34px; font-weight: 500; }
+.lab-cheatsheet .ticks li::before { position: absolute; left: 0; top: 0; }
+#swPill { white-space: nowrap; }
+@media (max-width: 600px) {
+  body:has(main.lab) .brand__text, body:has(main.lab) .lab-back__txt { display: none; }
+}
 .lab-cheatsheet .ticks li b { color: var(--ink); }
 .lab-foot { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 26px; }
 @media (max-width: 640px) {
