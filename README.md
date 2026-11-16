@@ -58,7 +58,8 @@ Cualquier persona puede crear una cuenta de pasajero o conductor con un correo `
 
 - El conductor pulsa **Iniciar y compartir ubicación**; el navegador pide permiso de GPS y envía posiciones mientras la página siga abierta (Web Geolocation API + `watchPosition`). Al terminar, la posición se borra.
 - El pasajero elige parada y envía una **solicitud**; queda `pendiente` hasta que el conductor la acepta. Aceptar consume un asiento real (sin sobreventa).
-- Los cambios viajan por **WebSocket** (`/api/vivo/ws`, autenticado con JWT) a una sala por raite y fecha; si el canal falla, la página se refresca cada 20 s.
+- Los cambios viajan por **WebSocket** (`/api/vivo/ws`) a una sala por raite y fecha; si el canal falla, la página se refresca cada 20 s. Para abrirlo, el cliente pide un ticket de 60 s en `POST /api/vivo/ws-ticket`; el servidor valida el origen, el tamaño y la frecuencia de los mensajes.
+- **Avisos push del viaje**: solicitud, aceptación o rechazo, inicio, proximidad (3 min o menos a la parada, calculada en el servidor) y fin. Cada envío queda en `notificaciones_log`; el conductor la consulta en `GET /api/vivo/:id/notificaciones`.
 - Privacidad: la posición solo la ven el conductor y los participantes (`confirmada` o `pendiente`). Antes de solicitar se muestra la ruta y la estimación, sin el auto. Las posiciones de más de 90 s se descartan y las lecturas con precisión mayor a 30 m se rechazan.
 - La última posición se guarda en **Cache Storage** (`rodando-live-v1`) para mostrarla sin conexión; el service worker (`v7`) nunca cachea `/api/vivo` porque incluye datos de la reserva.
 - Límites reales del prototipo: el GPS solo funciona con HTTPS (o localhost) y con la PWA abierta; en segundo plano el sistema operativo puede suspender el envío.
@@ -96,6 +97,10 @@ curl -s  localhost:3000/api/cache/stats                  # {"entradas":1,"hits":
 - Botón **Demostración automática**: ejecuta `caches.open()` → `cache.put()` → `cache.match()` → `cache.add()` → `cache.delete()` → `caches.has()` y lo va escribiendo en la bitácora. `cache.html?demo=1` la ejecuta sola (útil para capturas).
 
 El laboratorio usa la misma caché versionada que el service worker (`rodando-utp-v7`), así que también sirve para ver qué quedó guardado para el modo sin conexión.
+
+## Reporte del backend (Subproducto 7)
+
+[`docs/subproducto7/Backend_Rodando_UTP_Live.pdf`](docs/subproducto7/Backend_Rodando_UTP_Live.pdf): backend del seguimiento en vivo y lista de cotejo de 17 criterios con la ubicación de cada uno en el código. Las capturas se toman de producción con `node docs/subproducto7/capturar.mjs estaticas|vivo|pruebas` y el documento se genera con `uv run --with python-docx python docs/subproducto7/generar_backend.py` y `node docs/subproducto7/imprimir_pdf.mjs`.
 
 ## Documento de la actividad
 
