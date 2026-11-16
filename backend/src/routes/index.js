@@ -24,6 +24,8 @@ import * as cond from "../controllers/conductores.controller.js";
 import * as adminCtl from "../controllers/admin.controller.js";
 import { rolUsuarioSchema } from "../schemas/admin.schema.js";
 import * as push from "../controllers/push.controller.js";
+import * as ritmo from "../controllers/ritmo.controller.js";
+import { crearGrupoSchema, ausenciaSchema } from "../schemas/ritmo.schema.js";
 import { health } from "../controllers/health.controller.js";
 
 // Límite estricto para login/registro (fuerza bruta); se desactiva en pruebas.
@@ -68,6 +70,14 @@ r.get("/vivo/:id/notificaciones", requireAuth, validate({ params: idParam, query
 r.post("/vivo/:id/solicitudes/:codigo/aceptar", requireAuth, validate({ params: solicitudParams, body: fechaBody }), h(vivoCtl.responder));
 r.post("/vivo/:id/solicitudes/:codigo/rechazar", requireAuth, validate({ params: solicitudParams, body: fechaBody }), h(vivoCtl.rechazar));
 r.post("/vivo/:id/avisar", requireAuth, validate({ params: idParam, body: fechaBody }), h(vivoCtl.avisar));
+
+// Ritmo: patrón de viaje, demanda y grupos recurrentes.
+r.get("/ritmo/patron", requireAuth, h(ritmo.patron));
+r.get("/ritmo/demanda", cache(60), h(ritmo.demanda));
+r.get("/ritmo/grupos", requireAuth, h(ritmo.misGrupos));
+r.post("/ritmo/grupos", requireAuth, validate({ body: crearGrupoSchema }), h(ritmo.crearGrupo));
+r.post("/ritmo/grupos/:id/ausencias", requireAuth, validate({ params: idParam, body: ausenciaSchema }), h(ritmo.ausencia));
+r.delete("/ritmo/grupos/:id", requireAuth, validate({ params: idParam }), h(ritmo.salir));
 
 r.post("/conductores/solicitud", validate({ body: solicitudConductorSchema }), h(cond.solicitud));
 r.get("/admin/solicitudes", ...requireRole("admin"), h(cond.listar));

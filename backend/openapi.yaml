@@ -12,6 +12,7 @@ tags:
   - { name: Sistema }
   - { name: Auth }
   - { name: Catálogo }
+  - { name: Ritmo }
   - { name: Raites }
   - { name: Reservas }
   - { name: Conductores }
@@ -365,6 +366,76 @@ paths:
                   fecha: { type: string, format: date }
                   notificaciones: { type: array, items: { $ref: "#/components/schemas/NotificacionLog" } }
         "403": { $ref: "#/components/responses/Error" }
+  /api/ritmo/patron:
+    get:
+      tags: [Ritmo]
+      summary: Patrón de viaje del usuario (zona, sentido, franja y días) y raite sugerido
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Viajes analizados, patrones ordenados y sugerencia }
+        "401": { $ref: "#/components/responses/Error" }
+  /api/ritmo/demanda:
+    get:
+      tags: [Ritmo]
+      summary: Lugares ofrecidos y ocupados por zona, sentido y hora (público)
+      responses:
+        "200": { description: Demanda con porcentaje de ocupación }
+  /api/ritmo/grupos:
+    get:
+      tags: [Ritmo]
+      summary: Grupos activos del usuario con compañeros y aportación semanal
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Grupos activos }
+    post:
+      tags: [Ritmo]
+      summary: Confirma un grupo recurrente y genera las reservas de sus días
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [raiteId, dias, parada]
+              properties:
+                raiteId: { type: integer }
+                dias: { type: array, items: { type: integer, minimum: 0, maximum: 5 } }
+                parada: { type: string }
+      responses:
+        "201": { description: Grupo creado y reservas generadas }
+        "400": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+  /api/ritmo/grupos/{id}/ausencias:
+    post:
+      tags: [Ritmo]
+      summary: Registra que el integrante no viajará una fecha y avisa al conductor
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fecha]
+              properties:
+                fecha: { type: string, format: date }
+                motivo: { type: string }
+      responses:
+        "201": { description: Ausencia registrada }
+        "400": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+  /api/ritmo/grupos/{id}:
+    delete:
+      tags: [Ritmo]
+      summary: Sale del grupo y cancela sus reservas
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: Grupo cancelado }
   /api/conductores/solicitud:
     post:
       tags: [Conductores]
