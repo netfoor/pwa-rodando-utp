@@ -120,6 +120,34 @@ async function participantes(raiteId, dia) {
   return rows;
 }
 
+/** Avisa a todos los pasajeros confirmados del viaje (sin duplicar por día). */
+async function avisarConfirmados({ raiteId, fecha, dia, tipo, titulo, mensaje }) {
+  const { rows } = await query(
+    `SELECT user_id FROM reservas WHERE raite_id=$1 AND dia=$2 AND estado='confirmada'`, [raiteId, dia]);
+  await Promise.all(rows.map(({ user_id }) => push.notificarViaje({
+    userId: user_id, raiteId, fecha, tipo, titulo, mensaje, url: `/vivo.html?raite=${raiteId}`
+  }).catch(() => {})));
+}
+
+/** Avisa una sola vez a cada pasajero cuando su parada está a 3 minutos o menos. */
+async function avisarProximidad(r, viaje, raiteId, fecha) {
+  const dia = diaDeFecha(fecha);
+  const { rows } = await query(
+    `SELECT user_id, parada FROM reservas WHERE raite_id=$1 AND dia=$2 AND estado='confirmada'`,
+    [raiteId, dia]);
+  await Promise.all(rows.map(({ user_id, parada }) => {
+    const fraccion = fraccionParada(r.paradas, parada, r.tipo);
+    const pos = calcular(r, viaje, null, fraccion ?? 1);
+    if (pos?.etaMin == null || pos.etaMin > 3) return null;
+    return push.notificarViaje({
+      userId: user_id, raiteId, fecha, tipo: "proximidad", parada,
+      titulo: "Tu raite está cerca 📍",
+      mensaje: `Llega en ~${pos.etaMin} min a ${parada}. ¡Prepárate!`,
+      url: `/vivo.html?raite=${raiteId}`
+    }).catch(() => {});
+  }));
+}
+
 /** ¿El usuario puede ver la posición del auto? Conductor y participantes del viaje. */
 export async function puedeVer(raiteId, fecha, user) {
   if (!user) return false;
@@ -208,6 +236,11 @@ export async function iniciar(user, raiteId, { fecha } = {}) {
        estado = CASE WHEN viajes.estado = 'finalizado' THEN 'en_camino' ELSE viajes.estado END,
        finalizado_en = CASE WHEN viajes.estado = 'finalizado' THEN NULL ELSE viajes.finalizado_en END
      RETURNING *`, [raiteId, fecha]);
+  await avisarConfirmados({
+    raiteId, fecha, dia, tipo: "inicio",
+    titulo: "El viaje ya comenzó 🚗",
+    mensaje: `${r.c_nombre} inició el raite de las ${r.hora}. Sigue la posición en vivo.`
+  });
   return { viaje: rows[0], fecha };
 }
 
@@ -225,6 +258,7 @@ export async function actualizarPosicion(user, raiteId, { lat, lng, precision, v
       WHERE raite_id=$1 AND fecha=$2 RETURNING *`,
     [raiteId, fecha, lat, lng, precision ?? null, velocidad ?? null, rumbo ?? null]);
   const pos = calcular(r, rows[0], user, 1);
+  await avisarProximidad(r, rows[0], raiteId, fecha);
   return { viaje: rows[0], posicion: pos, fecha };
 }
 
@@ -239,6 +273,12 @@ export async function cambiarEstado(user, raiteId, { estado, fecha }) {
       `UPDATE viajes SET estado='finalizado', finalizado_en=now(), lat=NULL, lng=NULL, precision_m=NULL,
               velocidad_ms=NULL, rumbo=NULL, actualizado_en=now()
         WHERE raite_id=$1 AND fecha=$2 RETURNING *`, [raiteId, fecha]);
+    const dia = diaDeFecha(fecha);
+    await avisarConfirmados({
+      raiteId, fecha, dia, tipo: "fin",
+      titulo: "El viaje terminó",
+      mensaje: "El raite llegó a su destino. ¡Gracias por viajar con Rodando UTP!"
+    });
     return { viaje: rows[0], fecha };
   }
   const { rows } = await query(
@@ -274,11 +314,12 @@ export async function solicitar(user, raiteId, { parada, nombre, fecha }) {
     creada = ins.rows[0];
   }
   if (!creada) throw conflict("CODIGO_NO_DISPONIBLE", "No se pudo generar el código, intenta de nuevo");
-  push.enviar({
+  await push.notificarViaje({
+    userId: r.driver_id, raiteId, fecha, tipo: "solicitud", parada,
     titulo: "Solicitud de lugar en vivo 🚗",
     mensaje: `${nombreFinal} quiere subir en ${parada}.`,
     url: `/vivo.html?raite=${raiteId}`
-  }, r.driver_id).catch(() => {});
+  }).catch(() => {});
   return { ...creada, fecha, nombre: nombreFinal, raiteId };
 }
 
@@ -331,13 +372,15 @@ export async function responderSolicitud(user, raiteId, codigo, accion, fecha = 
     return { ...reserva, estado: "confirmada" };
   });
 
-  push.enviar({
+  await push.notificarViaje({
+    userId: datos.user_id, raiteId, fecha, tipo: datos.estado === "confirmada" ? "aceptacion" : "rechazo",
+    parada: datos.parada,
     titulo: datos.estado === "confirmada" ? "¡Tu lugar quedó apartado! 🎉" : "Solicitud no aceptada",
     mensaje: datos.estado === "confirmada"
       ? `Código ${codigo}. Te subes en ${datos.parada}.`
       : "El conductor no pudo aceptar tu solicitud. Busca otro raite disponible.",
     url: `/vivo.html?raite=${raiteId}`
-  }, datos.user_id).catch(() => {});
+  }).catch(() => {});
   return { codigo, estado: datos.estado, parada: datos.parada, fecha };
 }
 
@@ -349,12 +392,25 @@ export async function avisar(user, raiteId, fecha = fechaMx()) {
     `SELECT parada FROM reservas WHERE raite_id=$1 AND user_id=$2 AND dia=$3 AND estado='confirmada'`,
     [raiteId, user.id, dia]);
   if (!mia.rowCount) throw forbidden("Necesitas una reserva confirmada para avisar");
-  push.enviar({
+  await push.notificarViaje({
+    userId: r.driver_id, raiteId, fecha, tipo: "aviso", parada: mia.rows[0].parada,
     titulo: "Tu pasajero ya te espera 📍",
     mensaje: `${user.nombre || "Un pasajero"} está en ${mia.rows[0].parada}.`,
     url: `/vivo.html?raite=${raiteId}`
-  }, r.driver_id).catch(() => {});
+  }).catch(() => {});
   return { ok: true, parada: mia.rows[0].parada };
+}
+
+/** Bitácora de avisos push del viaje; solo conductor dueño o admin. */
+export async function notificaciones(user, raiteId, { fecha } = {}) {
+  await exigirDueno(raiteId, user);
+  fecha = fecha || fechaMx();
+  const { rows } = await query(
+    `SELECT id, tipo, parada, resultado, detalle, enviado_en AS "enviadoEn"
+       FROM notificaciones_log
+      WHERE raite_id=$1 AND fecha=$2
+      ORDER BY enviado_en DESC`, [raiteId, fecha]);
+  return { notificaciones: rows, fecha };
 }
 
 /** Métricas internas del viaje (para pruebas y difusión). */

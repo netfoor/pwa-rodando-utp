@@ -64,6 +64,7 @@ r.patch("/vivo/:id/estado", requireAuth, validate({ params: idParam, body: estad
 r.post("/vivo/:id/finalizar", requireAuth, validate({ params: idParam, body: fechaBody }), h(vivoCtl.finalizar));
 r.post("/vivo/:id/solicitar", requireAuth, validate({ params: idParam, body: solicitarVivoSchema }), h(vivoCtl.solicitar));
 r.get("/vivo/:id/solicitudes", requireAuth, validate({ params: idParam, query: vivoQuery }), h(vivoCtl.solicitudes));
+r.get("/vivo/:id/notificaciones", requireAuth, validate({ params: idParam, query: vivoQuery }), h(vivoCtl.notificaciones));
 r.post("/vivo/:id/solicitudes/:codigo/aceptar", requireAuth, validate({ params: solicitudParams, body: fechaBody }), h(vivoCtl.responder));
 r.post("/vivo/:id/solicitudes/:codigo/rechazar", requireAuth, validate({ params: solicitudParams, body: fechaBody }), h(vivoCtl.rechazar));
 r.post("/vivo/:id/avisar", requireAuth, validate({ params: idParam, body: fechaBody }), h(vivoCtl.avisar));

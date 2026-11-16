@@ -35,6 +35,37 @@ export async function enviarPrueba(userId) {
   return { enviados, total: rows[0].total };
 }
 
+
+/**
+ * Registra y envía un aviso de un viaje. El índice único de la bitácora evita
+ * duplicados (p. ej. proximidad en cada posición) y deja constancia del envío.
+ */
+export async function notificarViaje({ userId, raiteId, fecha, tipo, parada = null, titulo, mensaje, url = "/" }) {
+  if (!userId || !fecha) return { resultado: "omitido" };
+  const ins = await query(
+    `INSERT INTO notificaciones_log (user_id, raite_id, fecha, tipo, parada)
+     VALUES ($1,$2,$3,$4,$5)
+     ON CONFLICT (user_id, raite_id, fecha, tipo) DO NOTHING
+     RETURNING id`, [userId, raiteId, fecha, tipo, parada]);
+  if (!ins.rowCount) return { resultado: "duplicado" };
+
+  let resultado = "omitido";
+  let detalle = "Las notificaciones push no están configuradas";
+  if (pushActivo) {
+    try {
+      const enviados = await enviar({ titulo, mensaje, url }, userId);
+      resultado = enviados ? "enviado" : "sin_suscripcion";
+      detalle = enviados ? null : "El usuario no tiene una suscripción activa";
+    } catch {
+      detalle = "No se pudo enviar la notificación";
+    }
+  }
+  await query(
+    "UPDATE notificaciones_log SET resultado=$2, detalle=$3 WHERE id=$1",
+    [ins.rows[0].id, resultado, detalle]);
+  return { resultado };
+}
+
 /**
  * Envía una notificación a las suscripciones de un usuario (o a todas si no se indica).
  * Elimina las suscripciones caducadas (404/410). @returns {Promise<number>} envíos exitosos

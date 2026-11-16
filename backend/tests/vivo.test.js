@@ -152,6 +152,34 @@ describe("seguimiento en vivo", () => {
     expect((await mover(cond, raite.id, ruta[0][0], ruta[0][1])).status).toBe(400);
   });
 
+  it("registra los avisos push del viaje y evita duplicar la proximidad", async () => {
+    const { cond, raite } = await escenario();
+    const ruta = (await ver(raite.id)).body.ruta;
+    const p = await nuevoUsuario();
+    const s = await solicitar(p, raite.id);
+    const avisos = async auth => (await api()
+      .get(`/api/vivo/${raite.id}/notificaciones?fecha=${FECHA}`).set(auth)).body.notificaciones;
+
+    expect((await avisos(cond.auth)).some(n => n.tipo === "solicitud")).toBe(true);
+    expect((await api().get(`/api/vivo/${raite.id}/notificaciones?fecha=${FECHA}`).set(p.auth)).status).toBe(403);
+
+    await api().post(`/api/vivo/${raite.id}/solicitudes/${s.body.codigo}/aceptar`)
+      .set(cond.auth).send({ fecha: FECHA });
+    await api().post(`/api/vivo/${raite.id}/iniciar`).set(cond.auth).send({ fecha: FECHA });
+    const cerca = ruta[Math.floor(ruta.length / 3)];
+    await mover(cond, raite.id, cerca[0], cerca[1]);
+    await mover(cond, raite.id, cerca[0], cerca[1]);
+    await api().post(`/api/vivo/${raite.id}/avisar`).set(p.auth).send({ fecha: FECHA });
+    await api().post(`/api/vivo/${raite.id}/finalizar`).set(cond.auth).send({ fecha: FECHA });
+
+    const lista = await avisos(cond.auth);
+    const tipos = new Set(lista.map(n => n.tipo));
+    for (const tipo of ["solicitud", "aceptacion", "inicio", "proximidad", "aviso", "fin"]) {
+      expect(tipos.has(tipo), `falta ${tipo}`).toBe(true);
+    }
+    expect(lista.filter(n => n.tipo === "proximidad")).toHaveLength(1);
+  });
+
   it("difunde la posición por WebSocket solo a los participantes", async () => {
     const { cond, raite } = await escenario();
     await api().post(`/api/vivo/${raite.id}/iniciar`).set(cond.auth).send({ fecha: FECHA });

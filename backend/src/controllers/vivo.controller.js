@@ -11,6 +11,9 @@ export const estado = async (req, res) =>
 export const wsTicket = (req, res) =>
   res.json({ ticket: firmarTicket(req.user), expiraEn: 60 });
 
+export const notificaciones = async (req, res) =>
+  res.json(await vivo.notificaciones(req.user, req.validated.params.id, req.validated.query));
+
 export const iniciar = async (req, res) => {
   const r = await vivo.iniciar(req.user, req.validated.params.id, req.validated.body);
   difundir(req.validated.params.id, r.fecha, { tipo: "estado", estado: r.viaje.estado });
