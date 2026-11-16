@@ -60,7 +60,7 @@ Cualquier persona puede crear una cuenta de pasajero o conductor con un correo `
 - El pasajero elige parada y envía una **solicitud**; queda `pendiente` hasta que el conductor la acepta. Aceptar consume un asiento real (sin sobreventa).
 - Los cambios viajan por **WebSocket** (`/api/vivo/ws`, autenticado con JWT) a una sala por raite y fecha; si el canal falla, la página se refresca cada 20 s.
 - Privacidad: la posición solo la ven el conductor y los participantes (`confirmada` o `pendiente`). Antes de solicitar se muestra la ruta y la estimación, sin el auto. Las posiciones de más de 90 s se descartan y las lecturas con precisión mayor a 30 m se rechazan.
-- La última posición se guarda en **Cache Storage** (`rodando-live-v1`) para mostrarla sin conexión; el service worker (`v5`) nunca cachea `/api/vivo` porque incluye datos de la reserva.
+- La última posición se guarda en **Cache Storage** (`rodando-live-v1`) para mostrarla sin conexión; el service worker (`v7`) nunca cachea `/api/vivo` porque incluye datos de la reserva.
 - Límites reales del prototipo: el GPS solo funciona con HTTPS (o localhost) y con la PWA abierta; en segundo plano el sistema operativo puede suspender el envío.
 
 Prueba rápida (dos ventanas, lunes a sábado): entra como `mariana.lopez@utpuebla.edu.mx` / `Demo1234!`, abre el primer raite y pulsa **Iniciar y compartir ubicación**. En otra ventana entra como pasajero, solicita un lugar y verás el auto aparecer cuando el conductor acepte.
@@ -95,7 +95,7 @@ curl -s  localhost:3000/api/cache/stats                  # {"entradas":1,"hits":
 - Muestra el estado del service worker y la cuota con `navigator.storage.estimate()`.
 - Botón **Demostración automática**: ejecuta `caches.open()` → `cache.put()` → `cache.match()` → `cache.add()` → `cache.delete()` → `caches.has()` y lo va escribiendo en la bitácora. `cache.html?demo=1` la ejecuta sola (útil para capturas).
 
-El laboratorio usa la misma caché versionada que el service worker (`rodando-utp-v5`), así que también sirve para ver qué quedó guardado para el modo sin conexión.
+El laboratorio usa la misma caché versionada que el service worker (`rodando-utp-v7`), así que también sirve para ver qué quedó guardado para el modo sin conexión.
 
 ## Documento de la actividad
 

@@ -8,7 +8,7 @@
     abiertas y abre la URL indicada por el servidor.
    (Sube la versión al cambiar archivos.)
    ========================================================= */
-const CACHE = "rodando-utp-v6";
+const CACHE = "rodando-utp-v7";
 const ARCHIVOS = [
   "./",
   "./index.html",
