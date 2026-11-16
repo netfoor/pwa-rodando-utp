@@ -34,6 +34,24 @@ describe("auth", () => {
     expect((await api().get("/api/auth/me").set("Authorization", "Bearer basura")).status).toBe(401);
   });
 
+  it("usa el rol actual de la BD sin pedir otro inicio de sesión", async () => {
+    const u = await nuevoUsuario();
+    const raite = { zona: "centro", tipo: "ida", hora: "06:00", dias: [0], asientos: 2, aportacion: 10, paradas: ["Zócalo"] };
+    expect((await api().post("/api/raites").set(u.auth).send(raite)).status).toBe(403);
+
+    const admin = await loginAdmin();
+    const cambio = await api().patch(`/api/admin/usuarios/${u.usuario.id}`).set(admin).send({ rol: "conductor" });
+    expect(cambio.status).toBe(200);
+    expect((await api().post("/api/raites").set(u.auth).send(raite)).status).toBe(201);
+  });
+
+  it("rechaza el token de una cuenta eliminada", async () => {
+    const u = await nuevoUsuario();
+    const admin = await loginAdmin();
+    expect((await api().delete(`/api/admin/usuarios/${u.usuario.id}`).set(admin)).status).toBe(204);
+    expect((await api().get("/api/auth/me").set(u.auth)).status).toBe(401);
+  });
+
   it("un conductor debe indicar su coche", async () => {
     const res = await api().post("/api/auth/registro").send({ nombre: "Sin Coche", correo: `sc${Date.now()}@utpuebla.edu.mx`, password: "Prueba1234", rol: "conductor" });
     expect(res.status).toBe(400);
