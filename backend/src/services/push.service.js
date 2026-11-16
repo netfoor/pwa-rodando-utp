@@ -37,15 +37,16 @@ export async function enviarPrueba(userId) {
 
 
 /**
- * Registra y envía un aviso de un viaje. El índice único de la bitácora evita
- * duplicados (p. ej. proximidad en cada posición) y deja constancia del envío.
+ * Registra y envía un aviso de un viaje. El índice parcial de la bitácora evita
+ * repetir avisos de estado/proximidad, pero permite una entrada por solicitud o
+ * aviso de pasajero, y deja constancia del envío.
  */
 export async function notificarViaje({ userId, raiteId, fecha, tipo, parada = null, titulo, mensaje, url = "/" }) {
   if (!userId || !fecha) return { resultado: "omitido" };
   const ins = await query(
     `INSERT INTO notificaciones_log (user_id, raite_id, fecha, tipo, parada)
      VALUES ($1,$2,$3,$4,$5)
-     ON CONFLICT (user_id, raite_id, fecha, tipo) DO NOTHING
+     ON CONFLICT DO NOTHING
      RETURNING id`, [userId, raiteId, fecha, tipo, parada]);
   if (!ins.rowCount) return { resultado: "duplicado" };
 

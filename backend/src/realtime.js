@@ -8,6 +8,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import jwt from "jsonwebtoken";
 import { env } from "./config/env.js";
 import * as vivo from "./services/vivo.service.js";
+import { query } from "./db/pool.js";
 import { wsMensajeSchema } from "./schemas/vivo.schema.js";
 
 const RUTA = "/api/vivo/ws";
@@ -25,12 +26,16 @@ function verificar(token, opciones) {
   try { return jwt.verify(token, env.jwtSecret, opciones); } catch { return null; }
 }
 
-function usuarioDelToken(token) {
+/** El token solo identifica; el rol y la existencia se leen de la BD al conectar. */
+async function usuarioDelToken(token) {
   if (!token) return null;
   const ticket = verificar(token, { audience: AUDIENCIA });
   const p = ticket || verificar(token);
   if (!p) return null;
-  return { id: Number(p.sub), rol: p.rol };
+  const id = Number(p.sub);
+  if (!Number.isInteger(id) || id <= 0) return null;
+  const { rows } = await query("SELECT id, rol FROM users WHERE id = $1", [id]);
+  return rows[0] || null;
 }
 
 /** En producción el navegador solo puede abrir el canal desde el mismo sitio o los orígenes permitidos. */
@@ -102,14 +107,20 @@ export async function difundirPosicion(raiteId, fecha) {
 export function attachRealtime(server) {
   const wss = new WebSocketServer({ noServer: true, maxPayload: 4 * 1024 });
 
-  server.on("upgrade", (req, socket, head) => {
+  server.on("upgrade", async (req, socket, head) => {
     const url = new URL(req.url, "http://localhost");
     if (url.pathname !== RUTA) return socket.destroy();
     if (!origenPermitido(req)) {
       socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
       return socket.destroy();
     }
-    const usuario = usuarioDelToken(url.searchParams.get("token"));
+    let usuario;
+    try {
+      usuario = await usuarioDelToken(url.searchParams.get("token"));
+    } catch {
+      return socket.destroy();
+    }
+    if (socket.destroyed) return;
     if (!usuario) {
       socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
       return socket.destroy();

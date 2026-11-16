@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { WebSocket } from "ws";
 import { app } from "../src/app.js";
 import { attachRealtime } from "../src/realtime.js";
+import { query } from "../src/db/pool.js";
 import { api, nuevoUsuario } from "./helpers.js";
 
 /** Próximo lunes en formato AAAA-MM-DD, para que las pruebas no dependan del día real. */
@@ -167,6 +168,8 @@ describe("seguimiento en vivo", () => {
     const ruta = (await ver(raite.id)).body.ruta;
     const p = await nuevoUsuario();
     const s = await solicitar(p, raite.id);
+    const p2 = await nuevoUsuario();
+    await solicitar(p2, raite.id);
     const avisos = async auth => (await api()
       .get(`/api/vivo/${raite.id}/notificaciones?fecha=${FECHA}`).set(auth)).body.notificaciones;
 
@@ -188,6 +191,7 @@ describe("seguimiento en vivo", () => {
       expect(tipos.has(tipo), `falta ${tipo}`).toBe(true);
     }
     expect(lista.filter(n => n.tipo === "proximidad")).toHaveLength(1);
+    expect(lista.filter(n => n.tipo === "solicitud")).toHaveLength(2);
   });
 
   it("difunde la posición por WebSocket solo a los participantes", async () => {
@@ -257,6 +261,23 @@ describe("seguimiento en vivo", () => {
     jwtWs.send(JSON.stringify({ tipo: "suscribir", raiteId: raite.id, fecha: FECHA }));
     expect((await jwtSuscrito).estado).toBe("en_camino");
     jwtWs.close();
+
+    // El ticket solo identifica: si la cuenta ya no existe, el canal responde 401.
+    const efimero = await nuevoUsuario();
+    const ticketEfimero = await api().post("/api/vivo/ws-ticket").set(efimero.auth);
+    await query("DELETE FROM users WHERE id = $1", [efimero.usuario.id]);
+    const muerto = new WebSocket(`${base}?token=${encodeURIComponent(ticketEfimero.body.ticket)}`);
+    const estadoHttp = await new Promise((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error("sin respuesta 401 del WebSocket")), 8000);
+      muerto.on("unexpected-response", (req, res) => {
+        clearTimeout(t);
+        res.resume();
+        resolve(res.statusCode);
+      });
+      muerto.on("open", () => { clearTimeout(t); muerto.close(); reject(new Error("el WebSocket aceptó una cuenta eliminada")); });
+      muerto.on("error", () => {});
+    });
+    expect(estadoHttp).toBe(401);
 
     await new Promise(r => server.close(r));
     wss.close();
