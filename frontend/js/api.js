@@ -122,6 +122,7 @@ const API = (() => {
     pushPrueba: () => request("POST", "/push/prueba"),
 
     vivo: (id, fecha) => request("GET", "/vivo/" + id + qs({ fecha })),
+    vivoTicket: () => request("POST", "/vivo/ws-ticket"),
     vivoIniciar: (id, fecha) => request("POST", `/vivo/${id}/iniciar`, { fecha }),
     vivoPosicion: (id, d) => request("POST", `/vivo/${id}/posicion`, d),
     vivoFinalizar: (id, fecha) => request("POST", `/vivo/${id}/finalizar`, { fecha }),

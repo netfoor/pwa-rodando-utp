@@ -56,6 +56,7 @@ r.get("/reservas/mias", requireAuth, h(reservas.mias));
 r.delete("/reservas/:codigo", requireAuth, validate({ params: codigoParam }), h(reservas.cancelar));
 
 // Seguimiento en vivo (Subproducto 5). El WebSocket vive en /api/vivo/ws (upgrade).
+r.post("/vivo/ws-ticket", requireAuth, h(vivoCtl.wsTicket)); // antes de /vivo/:id
 r.get("/vivo/:id", optionalAuth, validate({ params: idParam, query: vivoQuery }), h(vivoCtl.estado));
 r.post("/vivo/:id/iniciar", requireAuth, validate({ params: idParam, body: fechaBody }), h(vivoCtl.iniciar));
 r.post("/vivo/:id/posicion", requireAuth, validate({ params: idParam, body: posicionSchema }), h(vivoCtl.posicion));

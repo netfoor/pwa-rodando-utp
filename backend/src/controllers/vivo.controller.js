@@ -3,10 +3,13 @@
  * solicitudes de lugar y avisos. Difunde los cambios por WebSocket.
  */
 import * as vivo from "../services/vivo.service.js";
-import { difundir, difundirPosicion } from "../realtime.js";
+import { difundir, difundirPosicion, firmarTicket } from "../realtime.js";
 
 export const estado = async (req, res) =>
   res.json(await vivo.estado(req.user, req.validated.params.id, req.validated.query));
+
+export const wsTicket = (req, res) =>
+  res.json({ ticket: firmarTicket(req.user), expiraEn: 60 });
 
 export const iniciar = async (req, res) => {
   const r = await vivo.iniciar(req.user, req.validated.params.id, req.validated.body);

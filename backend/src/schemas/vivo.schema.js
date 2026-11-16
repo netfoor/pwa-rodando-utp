@@ -32,3 +32,17 @@ export const solicitudParams = z.object({
   id: z.coerce.number().int().positive(),
   codigo: z.string().trim().toUpperCase().regex(/^RU-[A-Z0-9]{4}$/, "Código inválido")
 });
+
+/** Mensajes que el cliente puede enviar por el WebSocket de seguimiento. */
+export const wsMensajeSchema = z.discriminatedUnion("tipo", [
+  z.object({ tipo: z.literal("ping") }),
+  z.object({
+    tipo: z.literal("suscribir"),
+    raiteId: z.coerce.number().int().positive(),
+    fecha: fecha.optional()
+  }),
+  posicionSchema.extend({
+    tipo: z.literal("posicion"),
+    raiteId: z.coerce.number().int().positive()
+  })
+]);

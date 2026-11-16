@@ -14,6 +14,7 @@
   let autoRumbo = null;
   let watchId = null;
   let ws = null;
+  let conectando = false;
   let reintentos = 0;
   let ping = null;
   let ultimoEnvio = 0;
@@ -591,14 +592,21 @@
     }
   }
 
-  function conectarWS() {
-    if (!API.token || !raiteId) return;
+  async function conectarWS() {
+    if (!API.token || !raiteId || conectando) return;
     if (ws && ws.readyState <= WebSocket.OPEN) return;
+    conectando = true;
     cerrarWS();
     const proto = location.protocol === "https:" ? "wss" : "ws";
+    let ticket = API.token;
     try {
-      ws = new WebSocket(`${proto}://${location.host}/api/vivo/ws?token=${encodeURIComponent(API.token)}`);
-    } catch { return; }
+      ticket = (await API.vivoTicket()).ticket || API.token;
+    } catch { /* si el ticket falla, el servidor aún acepta el JWT como respaldo */ }
+    if (!API.token || !raiteId) { conectando = false; return; }
+    try {
+      ws = new WebSocket(`${proto}://${location.host}/api/vivo/ws?token=${encodeURIComponent(ticket)}`);
+    } catch { conectando = false; return; }
+    conectando = false;
     ws.addEventListener("open", () => {
       reintentos = 0;
       suscribirWS();

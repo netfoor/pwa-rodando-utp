@@ -160,11 +160,17 @@ describe("seguimiento en vivo", () => {
     await api().post(`/api/vivo/${raite.id}/solicitudes/${s.body.codigo}/aceptar`)
       .set(cond.auth).send({ fecha: FECHA });
 
+    expect((await api().post("/api/vivo/ws-ticket")).status).toBe(401);
+    const ticket = await api().post("/api/vivo/ws-ticket").set(p.auth);
+    expect(ticket.status).toBe(200);
+    expect(ticket.body.ticket).toBeTruthy();
+    expect(ticket.body.expiraEn).toBe(60);
+
     const server = createServer(app);
     const wss = attachRealtime(server);
     await new Promise(r => server.listen(0, r));
-    const url = `ws://127.0.0.1:${server.address().port}/api/vivo/ws?token=${p.token}`;
-    const ws = new WebSocket(url);
+    const base = `ws://127.0.0.1:${server.address().port}/api/vivo/ws`;
+    const ws = new WebSocket(`${base}?token=${encodeURIComponent(ticket.body.ticket)}`);
 
     const esperar = (tipo, filtro = () => true, ms = 8000) => new Promise((resolve, reject) => {
       const t = setTimeout(() => reject(new Error("sin mensaje " + tipo)), ms);
@@ -181,6 +187,10 @@ describe("seguimiento en vivo", () => {
     const suscrito = await listo;
     expect(suscrito.estado).toBe("en_camino");
 
+    const invalido = esperar("error", m => m.code === "MENSAJE_INVALIDO");
+    ws.send(JSON.stringify({ tipo: "posicion", raiteId: raite.id, lat: "no", lng: -98.2 }));
+    expect((await invalido).code).toBe("MENSAJE_INVALIDO");
+
     const ruta = suscrito.ruta || (await ver(raite.id)).body.ruta;
     const aviso = esperar("posicion");
     await mover(cond, raite.id, ruta[0][0], ruta[0][1]);
@@ -195,6 +205,21 @@ describe("seguimiento en vivo", () => {
     expect((await bloqueo).code).toBe("PROHIBIDO");
 
     ws.close();
+
+    // El JWT de sesión sigue funcionando como respaldo para clientes antiguos.
+    const jwtWs = new WebSocket(`${base}?token=${encodeURIComponent(cond.token)}`);
+    const jwtSuscrito = new Promise((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error("sin suscrito con JWT")), 8000);
+      jwtWs.on("message", raw => {
+        const m = JSON.parse(raw);
+        if (m.tipo === "suscrito") { clearTimeout(t); resolve(m); }
+      });
+    });
+    await new Promise(r => jwtWs.on("open", r));
+    jwtWs.send(JSON.stringify({ tipo: "suscribir", raiteId: raite.id, fecha: FECHA }));
+    expect((await jwtSuscrito).estado).toBe("en_camino");
+    jwtWs.close();
+
     await new Promise(r => server.close(r));
     wss.close();
   });
