@@ -75,6 +75,8 @@ const API = (() => {
         if (k && k.startsWith(CACHE + "/vivo")) localStorage.removeItem(k);
       }
     } catch { /* sin almacenamiento */ }
+    // La vista en vivo guarda posiciones en Cache Storage, fuera de localStorage.
+    try { if ("caches" in window) caches.delete("rodando-live-v1").catch(() => {}); } catch { /* sin Cache API */ }
     dispatchEvent(new CustomEvent("auth-change"));
   }
 

@@ -140,6 +140,8 @@
 
   function aplicar(e) {
     if (!e) return;
+    // Si este usuario dejó de participar, no conserves su última posición local.
+    if (!e.puedeVer) borrarCacheVivo();
     if (estado && estado.raite.id !== e.raite.id) {
       auto = null;
       capaRuta = null;
@@ -436,6 +438,7 @@
     el.cancelarBtn.disabled = true;
     try {
       await API.cancelar(codigo);
+      await borrarCacheVivo();
       toast("Reserva cancelada");
       await cargar();
     } catch (err) {
@@ -583,6 +586,7 @@
     try {
       await API.vivoFinalizar(raiteId, FECHA);
       detener();
+      await borrarCacheVivo();
       toast("Viaje terminado. La posición se borró.");
       await cargar();
     } catch (err) {
@@ -668,6 +672,12 @@
     if (ws) { ws.onclose = null; ws.close(); ws = null; }
   }
 
+  /** Borra la caché compartida de la vista en vivo (posiciones y reserva). */
+  async function borrarCacheVivo() {
+    if (!("caches" in window)) return;
+    try { await caches.delete(CACHE); } catch { /* almacenamiento bloqueado */ }
+  }
+
   async function guardarUltima(pos) {
     if (!pos || !("caches" in window)) return;
     try {
@@ -705,10 +715,11 @@
     cerrarWS();
     cargar();
   });
-  el.logout.addEventListener("click", () => {
+  el.logout.addEventListener("click", async () => {
     API.logout();
     detener();
     cerrarWS();
+    await borrarCacheVivo();
     location.href = "index.html";
   });
   el.requestBtn.addEventListener("click", solicitar);
