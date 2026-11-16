@@ -294,7 +294,8 @@
       ? [NOMBRE_UTP, ...[...estado.raite.paradas].reverse()]
       : [...estado.raite.paradas, NOMBRE_UTP];
     const avance = estado.posicion?.avance ?? 0;
-    const hechas = Math.floor(avance * (paradas.length + 1));
+    // Misma escala que fraccionParada() del servidor: cada parada está en i/L (regreso) o (i+1)/L (ida)
+    const hechas = avance > 0 ? Math.floor(avance * paradas.length) + (estado.raite.tipo === "regreso" ? 1 : 0) : 0;
     el.pasos.innerHTML = "";
     [...new Set(paradas)].forEach((nombre, i) => {
       const li = document.createElement("li");
