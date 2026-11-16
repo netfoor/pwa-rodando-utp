@@ -152,6 +152,16 @@ describe("seguimiento en vivo", () => {
     expect((await mover(cond, raite.id, ruta[0][0], ruta[0][1])).status).toBe(400);
   });
 
+  it("responde 409 a solicitudes duplicadas, incluso simultáneas", async () => {
+    const { raite } = await escenario();
+    const p = await nuevoUsuario();
+    const respuestas = await Promise.all([solicitar(p, raite.id), solicitar(p, raite.id)]);
+    const estados = respuestas.map(r => r.status).sort();
+    expect(estados).toEqual([201, 409]);
+    expect(respuestas.find(r => r.status === 409).body.error.code).toBe("SOLICITUD_DUPLICADA");
+    expect((await solicitar(p, raite.id)).body.error.code).toBe("SOLICITUD_DUPLICADA");
+  });
+
   it("registra los avisos push del viaje y evita duplicar la proximidad", async () => {
     const { cond, raite } = await escenario();
     const ruta = (await ver(raite.id)).body.ruta;

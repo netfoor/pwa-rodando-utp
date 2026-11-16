@@ -305,13 +305,20 @@ export async function solicitar(user, raiteId, { parada, nombre, fecha }) {
   if (rowCount) throw conflict("SOLICITUD_DUPLICADA", "Ya tienes una solicitud o reserva en este raite hoy");
 
   let creada;
-  for (let intento = 0; intento < 5 && !creada; intento++) {
-    const ins = await query(
-      `INSERT INTO reservas (codigo, raite_id, user_id, dia, parada, nombre, estado)
-       VALUES ($1,$2,$3,$4,$5,$6,'pendiente')
-       ON CONFLICT (codigo) DO NOTHING RETURNING codigo, estado, parada, dia`,
-      [generarCodigo(), raiteId, user.id, dia, parada, nombreFinal]);
-    creada = ins.rows[0];
+  try {
+    for (let intento = 0; intento < 5 && !creada; intento++) {
+      const ins = await query(
+        `INSERT INTO reservas (codigo, raite_id, user_id, dia, parada, nombre, estado)
+         VALUES ($1,$2,$3,$4,$5,$6,'pendiente')
+         ON CONFLICT (codigo) DO NOTHING RETURNING codigo, estado, parada, dia`,
+        [generarCodigo(), raiteId, user.id, dia, parada, nombreFinal]);
+      creada = ins.rows[0];
+    }
+  } catch (err) {
+    // Dos solicitudes simultáneas pueden pasar la comprobación previa; el índice
+    // único parcial es la última defensa y se traduce a un 409 claro.
+    if (err.code === "23505") throw conflict("SOLICITUD_DUPLICADA", "Ya tienes una solicitud o reserva en este raite hoy");
+    throw err;
   }
   if (!creada) throw conflict("CODIGO_NO_DISPONIBLE", "No se pudo generar el código, intenta de nuevo");
   await push.notificarViaje({

@@ -19,7 +19,10 @@ export function errorHandler(err, req, res, next) {
   } else if (err.type === "entity.parse.failed") {
     status = 400; code = "JSON_INVALIDO"; message = "El cuerpo de la petición no es JSON válido";
   } else if (err.code === "23505") { // unique_violation
-    status = 409; code = "DUPLICADO"; message = "Ese registro ya existe";
+    status = 409;
+    const solicitud = err.constraint === "reservas_unica_idx";
+    code = solicitud ? "SOLICITUD_DUPLICADA" : "DUPLICADO";
+    message = solicitud ? "Ya tienes una solicitud o reserva en este raite hoy" : "Ese registro ya existe";
   } else if (err.code === "23503") { // foreign_key_violation
     status = 400; code = "REFERENCIA_INVALIDA"; message = "Referencia a un registro inexistente";
   }
