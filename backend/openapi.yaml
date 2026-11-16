@@ -370,7 +370,7 @@ paths:
     get:
       tags: [Ritmo]
       summary: Patrón de viaje del usuario (zona, sentido, franja y días) y raite sugerido
-      security: [{ bearerAuth: [] }]
+      security: [{ bearer: [] }]
       responses:
         "200": { description: Viajes analizados, patrones ordenados y sugerencia }
         "401": { $ref: "#/components/responses/Error" }
@@ -384,13 +384,13 @@ paths:
     get:
       tags: [Ritmo]
       summary: Grupos activos del usuario con compañeros y aportación semanal
-      security: [{ bearerAuth: [] }]
+      security: [{ bearer: [] }]
       responses:
         "200": { description: Grupos activos }
     post:
       tags: [Ritmo]
       summary: Confirma un grupo recurrente y genera las reservas de sus días
-      security: [{ bearerAuth: [] }]
+      security: [{ bearer: [] }]
       requestBody:
         required: true
         content:
@@ -410,7 +410,7 @@ paths:
     post:
       tags: [Ritmo]
       summary: Registra que el integrante no viajará una fecha y avisa al conductor
-      security: [{ bearerAuth: [] }]
+      security: [{ bearer: [] }]
       parameters:
         - { in: path, name: id, required: true, schema: { type: integer } }
       requestBody:
@@ -431,7 +431,7 @@ paths:
     delete:
       tags: [Ritmo]
       summary: Sale del grupo y cancela sus reservas
-      security: [{ bearerAuth: [] }]
+      security: [{ bearer: [] }]
       parameters:
         - { in: path, name: id, required: true, schema: { type: integer } }
       responses:
