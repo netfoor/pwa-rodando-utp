@@ -869,16 +869,20 @@ function avisarNuevaVersion(reg) {
   bar.className = "sw-update";
   bar.innerHTML = '<span>Nueva versión disponible</span><button class="btn btn--sm btn--primary" type="button">Actualizar</button>';
   bar.querySelector("button").addEventListener("click", () => {
+    pidioActualizar = true;
     if (reg.waiting) reg.waiting.postMessage({ tipo: "SKIP_WAITING" });
     else location.reload();
   });
   document.body.append(bar);
 }
 
+// En la primera visita el service worker también toma el control (clients.claim) y dispara
+// controllerchange; solo se recarga cuando la persona pidió la versión nueva.
+let pidioActualizar = false;
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   let recargando = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (recargando) return;
+    if (recargando || !pidioActualizar) return;
     recargando = true;
     location.reload();
   });
