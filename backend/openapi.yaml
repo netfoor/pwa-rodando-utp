@@ -167,6 +167,53 @@ paths:
         "200": { description: Cancelada }
         "403": { $ref: "#/components/responses/Error" }
         "404": { $ref: "#/components/responses/Error" }
+  /api/vivo/ws-ticket:
+    post:
+      tags: [En vivo]
+      summary: Ticket efímero para abrir el WebSocket
+      description: Devuelve un JWT de 60 segundos con audiencia `vivo-ws`. Evita exponer el JWT de sesión en la URL del canal.
+      security: [{ bearer: [] }]
+      responses:
+        "200":
+          description: Ticket listo para usar una sola vez en el WebSocket
+          content: { application/json: { schema: { $ref: "#/components/schemas/WsTicket" } } }
+        "401": { $ref: "#/components/responses/Error" }
+  /api/vivo/ws:
+    get:
+      tags: [En vivo]
+      summary: Canal WebSocket de seguimiento en vivo
+      description: |
+        No es una petición HTTP normal: abre un WebSocket en `wss://<host>/api/vivo/ws?token=<ticket>`.
+
+        **Autenticación.** Usa el ticket de `POST /api/vivo/ws-ticket` (60 s). El JWT de sesión
+        sigue aceptándose como respaldo para clientes antiguos.
+
+        **Acceso.** Solo el conductor, el admin y los participantes del viaje reciben la posición.
+        Si la reserva se cancela o rechaza, el servidor responde `PROHIBIDO` y deja de difundir.
+
+        **Orígenes.** En producción, si el navegador envía `Origin`, debe ser el mismo host o
+        aparecer en `ALLOWED_ORIGINS`.
+
+        **Límites.** Payload máximo de 4 KB y 30 mensajes por conexión cada 10 segundos.
+
+        **Cliente → servidor:** `{"tipo":"ping"}`, `{"tipo":"suscribir","raiteId":1,"fecha":"2026-11-16"}`
+        y `{"tipo":"posicion","raiteId":1,"lat":19.04,"lng":-98.19,"precision":8,"velocidad":10,"rumbo":90,"fecha":"2026-11-16"}`.
+
+        **Servidor → cliente:** `pong`, `suscrito`, `posicion`, `estado`, `solicitudes`, `reserva`,
+        `finalizado` y `error` (`{tipo, code, message}`).
+      parameters:
+        - { in: query, name: token, required: true, schema: { type: string }, description: Ticket de 60 s o JWT de sesión }
+      responses:
+        "101": { description: "Cambio de protocolo a WebSocket" }
+        "401": { description: Ticket o sesión inválidos }
+        "403": { description: Origen no permitido }
+      x-websocket:
+        authentication: query-token
+        clientMessages:
+          - { tipo: ping }
+          - { tipo: suscribir, raiteId: 1, fecha: "2026-11-16" }
+          - { tipo: posicion, raiteId: 1, lat: 19.04, lng: -98.19, precision: 8, velocidad: 10, rumbo: 90, fecha: "2026-11-16" }
+        serverMessages: [pong, suscrito, posicion, estado, solicitudes, reserva, finalizado, error]
   /api/vivo/{id}:
     get:
       tags: [En vivo]
@@ -299,6 +346,24 @@ paths:
         - { in: path, name: id, required: true, schema: { type: integer } }
       responses:
         "200": { description: Aviso enviado al conductor, content: { application/json: { schema: { type: object } } } }
+        "403": { $ref: "#/components/responses/Error" }
+  /api/vivo/{id}/notificaciones:
+    get:
+      tags: [En vivo]
+      summary: Bitácora de avisos push del viaje (solo conductor o admin)
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+        - { in: query, name: fecha, schema: { type: string, format: date }, description: Por defecto hoy en Puebla }
+      responses:
+        "200":
+          description: Avisos registrados, del más reciente al más antiguo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fecha: { type: string, format: date }
+                  notificaciones: { type: array, items: { $ref: "#/components/schemas/NotificacionLog" } }
         "403": { $ref: "#/components/responses/Error" }
   /api/conductores/solicitud:
     post:
@@ -511,3 +576,17 @@ components:
     Reserva:
       type: object
       properties: { codigo: { type: string, example: RU-7KQ2 }, raiteId: { type: integer }, dia: { type: integer }, parada: { type: string }, nombre: { type: string }, estado: { type: string, enum: [confirmada, cancelada] } }
+    WsTicket:
+      type: object
+      properties:
+        ticket: { type: string, description: JWT con audiencia vivo-ws }
+        expiraEn: { type: integer, example: 60, description: Segundos de vigencia }
+    NotificacionLog:
+      type: object
+      properties:
+        id: { type: integer }
+        tipo: { type: string, enum: [solicitud, aceptacion, rechazo, aviso, inicio, fin, proximidad] }
+        parada: { type: string, nullable: true }
+        resultado: { type: string, enum: [pendiente, enviado, sin_suscripcion, omitido] }
+        detalle: { type: string, nullable: true }
+        enviadoEn: { type: string, format: date-time }

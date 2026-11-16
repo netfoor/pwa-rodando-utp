@@ -20,16 +20,18 @@ Error: `{ "error": { "code", "message", "details" } }`.
 | POST | `/reservas` | sesión | `{raiteId, dia, parada, nombre}` → código `RU-XXXX` (409 `RAITE_LLENO`, `RESERVA_DUPLICADA`) |
 | GET | `/reservas/mias` | sesión | Mis lugares apartados |
 | DELETE | `/reservas/:codigo` | dueño/admin | Cancela |
-| GET | `/vivo/:id` | opcional | Estado del viaje de hoy: ruta, paradas, ETA y posición (solo participantes) |
+| GET | `/vivo/:id` | opcional | Estado del viaje de hoy: ruta, paradas, ETA y posición; `participantes` y `solicitudesPendientes` solo para participantes |
 | POST | `/vivo/:id/iniciar` | conductor | Abre el viaje del día y empieza a compartir |
 | POST | `/vivo/:id/posicion` | conductor | `{lat, lng, precision, velocidad, rumbo}`; rechaza precisión > 30 m |
 | PATCH | `/vivo/:id/estado` | conductor | `en_camino`, `recogiendo`, `en_ruta` o `finalizado` |
 | POST | `/vivo/:id/finalizar` | conductor | Cierra el viaje y borra la posición |
 | POST | `/vivo/:id/solicitar` | sesión | Solicitud de lugar (queda `pendiente`; 409 `RAITE_LLENO` al aceptar sin cupo) |
 | GET | `/vivo/:id/solicitudes` | conductor | Solicitudes pendientes con distancia y ETA |
+| GET | `/vivo/:id/notificaciones` | conductor/admin | Bitácora de avisos push del viaje (tipo, parada, resultado, fecha) |
 | POST | `/vivo/:id/solicitudes/:codigo/{aceptar\|rechazar}` | conductor | Responde la solicitud |
 | POST | `/vivo/:id/avisar` | sesión | Avisa al conductor que el pasajero ya espera |
-| WS | `/vivo/ws?token=JWT` | sesión | Canal en vivo; mensajes `suscribir`, `suscrito`, `posicion`, `estado`, `solicitudes`, `reserva` |
+| POST | `/vivo/ws-ticket` | sesión | Ticket efímero de 60 s para abrir el WebSocket |
+| WS | `/vivo/ws?token=TICKET` | sesión | Canal en vivo; ver protocolo abajo |
 | GET | `/admin/solicitudes` | admin | Lista solicitudes (`?estado=`) |
 | POST | `/admin/solicitudes/:id/aprobar` | admin | Aprueba; si hay cuenta con ese correo, la hace conductor y publica su raite |
 | GET | `/admin/resumen` | admin | Conteos por tabla (tarjetas del panel) |
@@ -47,6 +49,25 @@ Error: `{ "error": { "code", "message", "details" } }`.
 | POST | `/push/subscribe` | opcional | Guarda la suscripción push |
 | POST | `/push/prueba` | sesión | Envía un aviso de prueba a las suscripciones del usuario |
 | POST | `/push/send` | admin | `{titulo, mensaje, userId?}` |
+
+## WebSocket de seguimiento en vivo
+
+1. `POST /vivo/ws-ticket` con `Authorization: Bearer <JWT>` devuelve `{ticket, expiraEn: 60}`.
+2. Abrir `wss://<host>/api/vivo/ws?token=<ticket>`. El JWT de sesión sigue funcionando como respaldo.
+3. Enviar `{"tipo":"suscribir","raiteId":1,"fecha":"2026-11-16"}` para entrar a la sala del viaje.
+4. El servidor responde `suscrito` con el estado y la posición; después difunde los cambios.
+
+Mensajes del cliente:
+
+- `{"tipo":"ping"}` → responde `pong`.
+- `{"tipo":"suscribir","raiteId":1,"fecha":"AAAA-MM-DD"}`.
+- `{"tipo":"posicion","raiteId":1,"lat":19.04,"lng":-98.19,"precision":8,"velocidad":10,"rumbo":90,"fecha":"AAAA-MM-DD"}` (solo conductor).
+
+Mensajes del servidor: `suscrito`, `posicion`, `estado`, `solicitudes`, `reserva`, `finalizado` y `error` (`{tipo, code, message}`).
+
+Reglas: solo el conductor, el admin y los participantes reciben la posición; al cancelar o rechazar la reserva el canal responde `PROHIBIDO`. En producción el `Origin` debe ser el mismo host o estar en `ALLOWED_ORIGINS`. Límites: payload de 4 KB y 30 mensajes por conexión cada 10 segundos.
+
+Los avisos push del viaje se registran en `notificaciones_log` y se consultan con `GET /vivo/:id/notificaciones` (conductor o admin). Tipos: `solicitud`, `aceptacion`, `rechazo`, `aviso`, `inicio`, `fin` y `proximidad`; esta última se envía una sola vez por pasajero cuando su parada está a 3 minutos o menos.
 
 ## Ejemplos
 
